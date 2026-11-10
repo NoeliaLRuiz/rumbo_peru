@@ -2,7 +2,7 @@
 
 > **Ayudamos a estudiantes de 5.º de secundaria y a sus tutores a elegir qué estudiar y dónde, mediante un test vocacional con IA que muestra todas las opciones reales cerca de casa (universidades, institutos, pedagógicos y CETPRO, públicos y privados) usando datos abiertos de SUNEDU y MINEDU.**
 
-**Demo:** https://rumbo-peru.streamlit.app · **Video de respaldo (60–90 s):** `[PEGAR LINK]`
+**Demo:** https://rumbo-peru.streamlit.app
 
 ---
 
