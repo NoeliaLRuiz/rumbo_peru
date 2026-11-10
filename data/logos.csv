@@ -1,15 +1,15 @@
 codigo,logo,metodo
-SUNEDU-001,https://www.unmsm.edu.pe/static/unmsm-static-files-v2/unmsm/assets/logo-unmsm.svg,img-logo
+SUNEDU-001,https://www.unmsm.edu.pe/favicon.ico,icon
 SUNEDU-061,https://www.uwiener.edu.pe/wp-content/themes/unw/upload/unw-logo.svg,img-logo
 SUNEDU-021,https://www.unfv.edu.pe/images/logo UNFV.jpg,img-logo
 SUNEDU-065,https://www.utp.edu.pe/sites/default/files/vectores/Logo%20Psicologia_1.svg,img-logo
-SUNEDU-049,https://umch.edu.pe/public/assets/logo-umch.png,img-logo
+SUNEDU-049,https://umch.edu.pe/wp-content/uploads/2026/05/cropped-Icon-UMCH-180x180.png,apple-touch-icon
 SUNEDU-018,https://www.ulima.edu.pe/themes/custom/ulima/logo.svg,img-logo
-SUNEDU-079,https://www.ue.edu.pe/pregrado/images/Diseno/2024/logo%20uesan%20blanco%20web.png#joomlaImage://local-images/Diseno/2024/logo uesan blanco web.png?width=300&height=102,img-logo
+SUNEDU-079,https://www.ue.edu.pe/pregrado/images/Diseno/2023/40x40.png#joomlaImage://local-images/Diseno/2023/40x40.png?width=40&height=40,icon
 SUNEDU-054,https://upc-cdn.b-cdn.net/web-institucional/static/img/logo-QS-Stars-gris.svg,img-logo
 SUNEDU-020,https://unife.edu.pe/wp-content/uploads/logo_unife_verde-1.png,img-logo
 SUNEDU-057,https://www.usil.edu.pe/favicon.ico,favicon
-SUNEDU-007,https://www.lamolina.edu.pe/assets/img/logos/ESCUDO_BLANCO.png,img-logo
+SUNEDU-007,https://www.lamolina.edu.pe/assets/img/logos/logo_UNALM.jpg,img-logo
 SUNEDU-025,https://www.une.edu.pe/uneweb/wp-content/uploads/2022/12/logo-UNE.jpg,img-logo
 SUNEDU-038,https://upeu.edu.pe/wp-content/uploads/2026/05/logo-upeu-dark.svg,img-logo
 SUNEDU-017,,sin logo
@@ -23,15 +23,15 @@ SUNEDU-068,https://www.cientifica.edu.pe/wp-content/uploads/2023/08/logo-cientif
 SUNEDU-097,https://www.uch.edu.pe/assets/sources/NotasUCH/dia%20del%20psicologo%20peruano%20peru%20uch%20universidad%20de%20ciencias%20y%20humanidades.jpg,img-logo
 SUNEDU-132,https://utec.edu.pe/sites/default/files/2023-09/logo_0.svg,img-logo
 SUNEDU-104,https://ulcb.edu.pe/wp-content/uploads/2026/02/logo02_ulcb.png,img-logo
-SUNEDU-006,https://portal.uni.edu.pe/images/logos/logo-uni-blanco_med.png,img-logo
+SUNEDU-006,https://portal.uni.edu.pe/templates/gk_university/images/touch-device.png,apple-touch-icon
 SUNEDU-014,https://cayetano.edu.pe/wp-content/uploads/2022/06/upch-logotipo.svg,img-logo
-SUNEDU-008,https://s3.amazonaws.com/files.pucp.edu.pe/pucp-general/img-header/logo-pucp-new.svg,img-logo
+SUNEDU-008,https://s3.amazonaws.com/files.pucp.edu.pe/homepucp/uploads/2021/07/19020656/favicon-512px.png,apple-touch-icon
 SUNEDU-019,,sin logo
 SUNEDU-055,https://www.upn.edu.pe/sites/default/files/logo-upn-nuevo.svg,img-logo
 SUNEDU-052,https://www.ucv.edu.pe/uploads/images/imgucv/Logo_de_l Ipsos_20260128161202.svg,img-logo
 SUNEDU-029,https://www.udep.edu.pe/wp-content/uploads/2020/03/logo.png,img-logo
 SUNEDU-067,https://ucontinental.edu.pe/site/wp-content/themes/salient-child/img/logo.svg,img-logo
-SUNEDU-030,https://file.urp.edu.pe/thumb-urp-wm-819-hm-258-we-819-he-258-x-0-y-0-s-0-q-60-zc-3-f-0-rgb-000000-src-53763-n-file-urp-20240703-094039-2-570668562e7f2e88.png,img-logo
+SUNEDU-030,https://file.urp.edu.pe/thumb-urp-wm-190-hm-86-we-151-he-86-x-21-y-0-s-0-q-60-zc-3-f-0-rgb-ffffff-src-60168-n-urp-web-iac-cinda.png,img-logo
 SUNEDU-004,https://www.unitru.edu.pe/Recursos/img-unt/logo-unt1.png,img-logo
 SUNEDU-011,,sin logo
 SUNEDU-005,https://www.unsa.edu.pe/wp-content/themes/unsatheme/img/logo-unsa-mov.png,img-logo
@@ -50,12 +50,12 @@ SUNEDU-037,https://upla.edu.pe/web/wp-content/uploads/2024/10/logo-8.png,img-log
 SUNEDU-039,https://uandina.edu.pe/_ipx/_/https://apiwww.uandina.edu.pe/storage/web_config/1/357C65zyfRa4jzeteBXzeta0f2W5WKpKgWzsBakk.svg,img-logo
 SUNEDU-040,https://utea.edu.pe/wp-content/uploads/2024/10/Repositorio-institucional-01.png,img-logo
 SUNEDU-076,https://untrm.edu.pe/apple-touch-icon.png,apple-touch-icon
-SUNEDU-003,https://www.unsaac.edu.pe/wp-content/uploads/2024/03/332logo.png,img-logo
-SUNEDU-035,https://www.unu.edu.pe/portal/images/logo-para-web.png,img-logo
+SUNEDU-003,https://www.unsaac.edu.pe/wp-content/uploads/2023/01/cropped-escudo-oficial-02-2-2-e1675183581418-180x180.png,apple-touch-icon
+SUNEDU-035,https://www.unu.edu.pe/portal/plugins/system/jat3/jat3/base-themes/default/images/favicon.ico,icon
 SUNEDU-046,https://upao.edu.pe/img/logo.jpg,img-logo
 SUNEDU-087,https://portal.autonomadeica.edu.pe/favicon.ico,icon
 SUNEDU-032,https://www.unjbg.edu.pe/images/themes/unjbg/logo-sm.png,img-logo
-SUNEDU-098,https://portal.unaj.edu.pe/sites/default/files/archivos/LOGO_BLANCO.png,img-logo
+SUNEDU-098,https://portal.unaj.edu.pe/themes/custom/modins_sub/logo.png,img-logo
 SUNEDU-089,https://unajma.edu.pe/wp-content/uploads/2025/02/cropped-UNAJMA-HORIZONTAL-170x65.png,img-logo
 SUNEDU-101,https://unj.edu.pe/wp-content/uploads/2021/08/cropped-unj_logo-230x40.png,img-logo
 SUNEDU-043,https://portal.upt.edu.pe/favicon.ico,favicon
@@ -87,7 +87,7 @@ SUNEDU-123,https://www.gob.pe/rails/active_storage/representations/proxy/eyJfcmF
 SUNEDU-125,https://www.gob.pe/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6NTg1NjExLCJwdXIiOiJibG9iX2lkIn19--ec09aa71a7f9ff61147cb3d2f61a9674fea3bc80/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDQ4XX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--830247c4bafe7cadca50817d8559bf1a09e3aa28/logo%20uniq.png,img-logo
 SUNEDU-121,https://www.gob.pe/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6MTcyMzY2LCJwdXIiOiJibG9iX2lkIn19--cac014e4c6ac9caaf637c3d08859aa1d08cc1a86/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDQ4XX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--830247c4bafe7cadca50817d8559bf1a09e3aa28/18987391_1835691486758991_286872311_o-1.png,img-logo
 SUNEDU-138,,sin logo
-SUNEDU-126,https://unaaa.edu.pe/wp-content/uploads/2026/08/sao-paulo.jpg,img-logo
+SUNEDU-126,https://unaaa.edu.pe/wp-content/uploads/2026/05/cropped-Escudo-UNAAA-Transparente-180x180.png,apple-touch-icon
 SUNEDU-084,https://unia.edu.pe/unia/wp-content/uploads/2026/05/logo_unia-1.png,img-logo
 SUNEDU-105,https://www.uroosevelt.edu.pe/portal/wp-content/uploads/2025/07/Logo-294x75-1.png,img-logo
 MINEDU-0412189,https://iespphuaraz.edu.pe/wp-content/uploads/2025/12/logo-pedagogicoo.png,img-logo
@@ -95,7 +95,7 @@ MINEDU-0644807,https://iesppchiquian.edu.pe/wp-content/uploads/2021/04/logo-iesp
 MINEDU-1041961,https://www.iespacr.edu.pe/wp-content/uploads/2026/04/Whithe-Logo-custom1.png,img-logo
 MINEDU-0598367,https://iespppomabamba.edu.pe/wp-content/uploads/2022/07/cropped-cropped-cropped-icono-iespp-1-1.png,img-logo
 MINEDU-0597278,https://iaro.academico.pe/admin/logo/logo_20260430_172422_9196.png,img-logo
-MINEDU-1003763,https://bitec.edu.pe/wp-content/uploads/2014/10/logoBlanco-peque.png,img-logo
+MINEDU-1003763,https://bitec.edu.pe/wp-content/uploads/2026/04/favicon96.png,apple-touch-icon
 MINEDU-0815001,https://www.isur.edu.pe/wp-content/uploads/2022/02/favicon.png,apple-touch-icon
 MINEDU-0815043,https://sanjoseoriol.edu.pe/wp-content/uploads/2023/04/cropped-capacitacion-docente_Mesa-de-trabajo-9-copia-2-180x180.png,apple-touch-icon
 MINEDU-0891531,https://www.elmerfaucett.edu.pe/wp-content/uploads/2022/01/LOGO-OFICIAL-borde-blanco.png,img-logo
@@ -109,14 +109,14 @@ MINEDU-1116144,,sin logo
 MINEDU-1119759,https://sanjoseoriol.edu.pe/wp-content/uploads/2023/04/cropped-capacitacion-docente_Mesa-de-trabajo-9-copia-2-180x180.png,apple-touch-icon
 MINEDU-1545623,https://aib.edu.pe/portal/wp-content/uploads/2024/11/1.jpg,og-image
 MINEDU-1126002,https://baltic.bitrix24.es/b15495391/resize_cache/103527/eb45a9f96698d396483d7a1236fe0380/landing/076/076071ca0420809ebdf7f49c4b677f7b/cropped-Logo-Neumann-270x270.png,apple-touch-icon
-MINEDU-1127364,https://www.sistemasdelsur.edu.pe/wp-content/uploads/2026/09/sisblancoloader-768x295.png,img-logo
+MINEDU-1127364,https://www.sistemasdelsur.edu.pe/wp-content/uploads/2024/07/cropped-isotipoSIS-fullcolor-180x180.png,apple-touch-icon
 MINEDU-0914473,http://www.isttec.com/logo.png,img-logo
 MINEDU-0721951,https://eesppbae.edu.pe/wp-content/uploads/2025/07/logobae.png,img-logo
 MINEDU-0604371,https://eesppjsco.edu.pe/wp-content/uploads/2026/01/intranetlogo026-.png,img-logo
 MINEDU-1198019,https://iesppelnazareno.edu.pe/wp-content/uploads/2023/02/cropped-LOGO_EL-NAZARENO_prueba_centro.png,img-logo
 MINEDU-0591859,,sin logo
 MINEDU-0637116,https://www.eesppfgc.edu.pe/storage/settings/favicon_1781193389.png,icon
-MINEDU-0928655,https://www.eesppukllasunchis.edu.pe/img/Logo-Pukllasunchis-blanco.png,img-logo
+MINEDU-0928655,https://www.eesppukllasunchis.edu.pe/img/logoiesp.ico,apple-touch-icon
 MINEDU-0815175,https://khipu.net/wp-content/uploads/2025/01/logocinco-1.webp,img-logo
 MINEDU-0782722,https://static.xx.fbcdn.net/rsrc.php/y1/r/ay1hV6OlegS.ico,icon
 MINEDU-0932475,https://eespacomayo.edu.pe/wp-content/uploads/2026/06/cropped-ACOMAYO-CUSCO-PERU.png,img-logo
@@ -129,7 +129,7 @@ MINEDU-1141795,"https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=180,h=18
 MINEDU-1093152,https://iesppabyp.edu.pe/wp-content/uploads/2019/07/foto1.png,img-logo
 MINEDU-0622365,https://web2.istene.edu.pe/wp-content/uploads/2022/07/logo_resize.png,img-logo
 MINEDU-1174465,https://loslibertadores.edu.pe/assets/img/icons/logito.png,img-logo
-MINEDU-1174960,https://lh7-us.googleusercontent.com/sitesv-images-rt/APXyLQeUjexYiOvaQReabSK6-9VtLbyhkqZxXOXALbHkYt7mtcJciuketJfjaYtHXSwUM0Rh2Iikq97Juwti5LLTqx_H13dbc4L_EqpvPlhiQZmNHkNQZcZClRCgRnSTfN7JPC6LtOvCVMhHRvaGyZ2FgiTRcrCs9dTsMSvM16lKxSSbDVy9jtmaJw7vOPvCrCQmBLYkOBTaLoHuihKgSJmJDvb6sQ,icon
+MINEDU-1174960,,sin logo
 MINEDU-1444876,https://ik.imagekit.io/4gphci5i4/favicon-koko500.webp,apple-touch-icon
 MINEDU-1167006,https://isppciroalegria.edu.pe/wp-content/uploads/2025/06/logo-ciro.png,img-logo
 MINEDU-0690388,https://eesppdavidsanchezinfante.edu.pe/wp-content/uploads/2024/11/logo_dsi_blue_light.png,img-logo
@@ -141,14 +141,14 @@ MINEDU-1065770,https://cimas.edu.pe/wp-content/uploads/2024/07/logo-cimas.svg,im
 MINEDU-1114081,https://sanmarcelo.edu.pe/wp-content/uploads/2026/03/logo-y-nombre-pedagogico-768x187-02-285x69.jpg,img-logo
 MINEDU-1113851,http://www.institutoninadesign.com/images/logo.png,img-logo
 MINEDU-1115096,https://www.tecsup.edu.pe/wp-content/uploads/2024/06/logo-tecsup.jpg,img-logo
-MINEDU-1123157,https://www.ipad.edu.pe/portal/images/header/ipad-logo.png,img-logo
+MINEDU-1123157,https://www.ipad.edu.pe/portal/images/apple-touch-icon.png,apple-touch-icon
 MINEDU-1115120,https://iespjosejimenezborja.edu.pe/wp-content/uploads/2026/08/cropped-logo-JJB-Pagina-web-2026-sin-fondo-180x180.png,apple-touch-icon
-MINEDU-1065655,http://www.istmac.com/images/istmac-logo-ters.png,img-logo
+MINEDU-1065655,http://www.istmac.com/templates/yootheme/cache/istmac-logo-a1d2b128.png,img-logo
 MINEDU-0702571,,sin logo
 MINEDU-1115088,https://diegothomson.edu.pe/wp-content/uploads/2026/01/cropped-logo_dt-70x70.png,img-logo
 MINEDU-1114131,https://iespericberne.edu.pe/wp-content/uploads/2021/04/ROMONEVERr.png,img-logo
-MINEDU-1115849,https://orsonwelles.edu.pe/wp-content/uploads/2026/06/LogoOW-2.png,img-logo
-MINEDU-1123116,https://euromedia-prod.s3.us-east-2.amazonaws.com/media-manager/92/logo-white.png,img-logo
+MINEDU-1115849,https://www.orsonwelles.edu.pe/wp-content/uploads/2024/12/favicon.svg#188,apple-touch-icon
+MINEDU-1123116,https://euromedia-prod.s3.us-east-2.amazonaws.com/media-manager/93/favicon.webp,apple-touch-icon
 MINEDU-1066778,https://capeco.edu.pe/wp-content/uploads/2021/04/LOGO-WEB-CAPECO.png,img-logo
 MINEDU-1114768,https://back.sise.edu.pe/uploads/logo_cientifica_713ac9cdcb.svg,img-logo
 MINEDU-1114446,https://paulofreire.edu.pe/escudo.png,img-logo
@@ -156,7 +156,7 @@ MINEDU-1065416,https://eesppemiliabarcia.edu.pe/wp-content/uploads/2022/06/logo0
 MINEDU-0466425,https://www.acarrion.edu.pe/wp-content/uploads/2026/10/carrion-logo-dark_.svg,img-logo
 MINEDU-1115328,,sin logo
 MINEDU-1115419,https://charleschaplin.pe/images/LOGO CHARLES CHAPLIN.png,img-logo
-MINEDU-1123405,https://www.certus.edu.pe/wp-content/uploads/2025/12/logo_webhome_2026.png,img-logo
+MINEDU-1123405,https://www.certus.edu.pe/wp-content/uploads/2020/01/cropped-favicon-certus-180x180.png,apple-touch-icon
 MINEDU-1123447,https://ceam.edu.pe/wp-content/uploads/2025/04/LOGOS-UDIT-INNOVACION-Fondo-1.png,img-logo
 MINEDU-1124726,https://eespinternacionalelim.edu.pe/shared/images/branding/logo-escudo-pedagogico.png,img-logo
 MINEDU-1114412,https://www.ena.edu.pe/wp-content/uploads/2023/05/cropped-ENA_HORIZONTAL_380x108.png,img-logo
@@ -171,7 +171,7 @@ MINEDU-1468040,https://avia.edu.pe/wp-content/uploads/2023/02/logo-avia-ok.png,i
 MINEDU-1114818,https://teccen.edu.pe/wp-content/uploads/2023/01/cropped-logotipoteccen-180x180.png,apple-touch-icon
 MINEDU-0326132,https://www.ensb.edu.pe/wp-content/uploads/elementor/thumbs/ENSB_logoweb-oyj4rjvlpy743djg3qnibarwlsiq85pl5dendclc00.png,img-logo
 MINEDU-1122951,https://telesup.edu.pe/wp-content/uploads/2017/06/cropped-icono-180x180.png,apple-touch-icon
-MINEDU-1468347,https://static.wixstatic.com/media/a66d22_644a038efcad40b9a757845c610433e2%7Emv2.png/v1/fill/w_180%2Ch_180%2Clg_1%2Cusm_0.66_1.00_0.01/a66d22_644a038efcad40b9a757845c610433e2%7Emv2.png,apple-touch-icon
+MINEDU-1468347,"https://static.wixstatic.com/media/dbf2b2_42d7ec1136fa42cdbbbdfffc21369049%7Emv2.jpeg/v1/fit/w_2500,h_1330,al_c/dbf2b2_42d7ec1136fa42cdbbbdfffc21369049%7Emv2.jpeg",og-image
 MINEDU-1468354,https://dgallia.edu.pe/wp-content/uploads/2022/06/cropped-logo-dgallia-black.png,img-logo
 MINEDU-1124353,https://www.condoray.edu.pe/wp-content/uploads/2021/02/Condoray_logo_azul.svg,img-logo
 MINEDU-1124437,https://irvg.org/wp-content/uploads/2016/04/cropped-head-irvg-2.png,img-logo
@@ -214,16 +214,16 @@ MINEDU-0729822,https://www.columbia.edu.pe/C-azul.ico,icon
 MINEDU-1073790,https://privateacher.edu.pe/www311/assets/img/pvt_logo_blanco.png,img-logo
 MINEDU-0466698,,sin logo
 MINEDU-1234020,https://professionalair.edu.pe/wp-content/uploads/2018/07/professionalair_logo_300x50_azul_.png,img-logo
-MINEDU-0450189,http://www.enag.edu.pe/favicon.ico?v=1794294740,apple-touch-icon
+MINEDU-0450189,http://www.enag.edu.pe/storage/uploads/builder/QN9MDRWHlFOGzl0OqWodZTINap6W1Wl3pUq6s6Rp.png,img-logo
 MINEDU-1080373,https://avia.edu.pe/wp-content/uploads/2023/02/logo-avia-ok.png,img-logo
 MINEDU-1491216,,sin logo
-MINEDU-1491505,http://www.gediscovery.edu.pe/static/img/footer-logo.png,img-logo
+MINEDU-1491505,http://www.gediscovery.edu.pe/uploads/convenios/amor-amar-logotipo.jpg,img-logo
 MINEDU-0630558,https://www.iesppazangaro.edu.pe/wp-content/uploads/2025/08/microsoft-365copilotchat-logo-static.png,img-logo
 MINEDU-0626192,,sin logo
 MINEDU-1463330,https://globalenglishedu.org/wp-content/uploads/2026/05/cropped-Logo-web-Global-2026-300x79.webp,img-logo
 MINEDU-1351782,https://static.xx.fbcdn.net/rsrc.php/y1/r/ay1hV6OlegS.ico,icon
 MINEDU-0931014,https://www.eespvirgendelcarmen.edu.pe/assets/favicon.ico,icon
-MINEDU-1369586,https://egatur.edu.pe/wp-content/uploads/2021/08/logo11.png,img-logo
+MINEDU-1369586,https://egatur.edu.pe/wp-content/uploads/2021/11/cropped-egaicon.jpg,apple-touch-icon
 MINEDU-1385095,http://fya57cefop.edu.pe/imagenes/LogoFyA.webp,img-logo
 MINEDU-1385079,http://www.fya57cefop.edu.pe/imagenes/LogoFyA.webp,img-logo
 MINEDU-1419977,http://www.fya57cefop.edu.pe/imagenes/LogoFyA.webp,img-logo
@@ -241,7 +241,7 @@ MINEDU-1701168,https://ipt.edu.pe/wp-content/uploads/2026/01/ipt_logo.png,img-lo
 MINEDU-1766955,https://itep.edu.pe/wp-content/uploads/2026/03/d064a095-56b5-47f1-9f24-9b66e81f13f3-scaled.png,img-logo
 MINEDU-1789296,https://www.its.edu.pe/themes/bootstrap_drupal/assets/img/logo-its-blanco.svg,img-logo
 MINEDU-1798826,https://khipu.net/wp-content/uploads/2025/01/logocinco-1.webp,img-logo
-MINEDU-1799832,https://www.certus.edu.pe/wp-content/uploads/2025/12/logo_webhome_2026.png,img-logo
+MINEDU-1799832,https://www.certus.edu.pe/wp-content/uploads/2020/01/cropped-favicon-certus-180x180.png,apple-touch-icon
 MINEDU-1801133,https://www.acarrion.edu.pe/wp-content/uploads/2026/10/carrion-logo-dark_.svg,img-logo
 MINEDU-1801158,https://ipt.edu.pe/wp-content/uploads/2026/01/ipt_logo.png,img-logo
 MINEDU-1801174,,sin logo
