@@ -30,9 +30,11 @@ st.set_page_config(page_title="Rumbo · Orientación vocacional", page_icon="�
 # Estilo
 # ============================================================
 AZUL, AZUL_OSCURO, CELESTE, AZUL_SUAVE, GRIS = "#1d4ed8", "#1e3a8a", "#38bdf8", "#eff6ff", "#64748b"
-COLOR_GESTION = {"Pública": AZUL_OSCURO, "Privada": CELESTE}
-ESCALA_AZUL = [[0, "#f0f9ff"], [0.12, "#bae6fd"], [0.3, "#7dd3fc"], [0.5, "#38bdf8"], [0.7, "#0284c7"],
-               [0.85, "#1d4ed8"], [1, "#172554"]]
+AMBAR, AMBAR_OSCURO = "#f59e0b", "#78350f"
+COLOR_GESTION = {"Pública": AZUL, "Privada": AMBAR}  # opción 1: azul + ámbar
+# Mapa por regiones: de turquesa claro a azul marino
+ESCALA_AZUL = [[0, "#ecfeff"], [0.12, "#ccfbf1"], [0.3, "#5eead4"], [0.5, "#2dd4bf"], [0.65, "#0ea5e9"],
+               [0.82, "#2563eb"], [1, "#1e3a8a"]]
 N_PASOS = 4  # bloques de preguntas: 6 preguntas por bloque, una de cada tipo de interés
 
 st.markdown(f"""
@@ -80,7 +82,7 @@ st.markdown(f"""
       padding: 12px 16px; box-shadow: 0 4px 14px rgba(29,78,216,.06);}}
 .kpi .v {{font-size: 1.65rem; font-weight: 800; color: {AZUL_OSCURO}; line-height: 1.2;}}
 .kpi .l {{color: {GRIS}; font-size: .83rem;}}
-.kpi.claro {{border-top-color: {CELESTE};}}
+.kpi.claro {{border-top-color: {AMBAR};}}
 
 /* Elementos varios */
 .perfil {{font-size: 3.4rem; font-weight: 800; letter-spacing: .35rem; line-height: 1.1;
@@ -88,7 +90,7 @@ st.markdown(f"""
          -webkit-text-fill-color: transparent;}}
 .pill {{display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: .78rem; font-weight: 600;
        margin: 0 4px 4px 0;}}
-.pill.pub {{background: {AZUL_OSCURO}; color: #fff;}} .pill.pri {{background: {CELESTE}; color: #0c4a6e;}}
+.pill.pub {{background: {AZUL}; color: #fff;}} .pill.pri {{background: {AMBAR}; color: {AMBAR_OSCURO};}}
 .pill.tipo {{background: {AZUL_SUAVE}; color: {AZUL_OSCURO}; border: 1px solid #bfdbfe;}}
 .leyenda {{font-size: .85rem; color: {GRIS};}}
 .leyenda i {{display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin: 0 5px 0 12px;
@@ -160,7 +162,8 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
-    df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), df["web"])]
+    logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)
+    df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), logos_web)]
     return df
 
 
@@ -176,11 +179,11 @@ def tiene_web(x) -> bool:
 PALABRAS_NOMBRE = {"DE", "DEL", "LA", "EL", "Y", "E", "LOS", "LAS", "S.A.C.", "S.A.", "S.R.L.", "SAC"}
 
 
-def logo_url(nombre: str, web) -> str:
-    """Logo de la institución: el ícono oficial de su web (servicio de favicons de Google).
-    Sin web: un círculo azul con sus iniciales (SVG en línea), para que todas tengan imagen."""
-    if tiene_web(web):
-        return f"https://www.google.com/s2/favicons?domain={urlparse(web).netloc}&sz=128"
+def logo_url(nombre: str, logo_web) -> str:
+    """Logo de la institución tomado de su web oficial (data/obtener_logos.py).
+    Si no hay: un círculo azul con sus iniciales (SVG en línea), para que todas tengan imagen."""
+    if tiene_web(logo_web):
+        return logo_web
     iniciales = "".join(w[0] for w in str(nombre).upper().split() if w not in PALABRAS_NOMBRE and w[0].isalpha())[:2]
     svg = (f"<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><circle cx='32' cy='32' r='32' "
            f"fill='#1d4ed8'/><text x='32' y='41' font-family='Arial' font-size='24' font-weight='700' "
@@ -253,7 +256,7 @@ def mapa_regiones(df: pd.DataFrame, metrica: str, key: str, height: int = 520, d
         fig.add_trace(go.Choroplethmap(  # contorno resaltado de la región elegida
             geojson=GEO, featureidkey="properties.NOMBDEP", locations=[destacar], z=[1],
             colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0)"]], showscale=False,
-            marker_line_color="#f59e0b", marker_line_width=4, hoverinfo="skip"))
+            marker_line_color=AMBAR, marker_line_width=4, hoverinfo="skip"))
         c = centros_regiones()[destacar]
         centro, zoom = {"lat": c["lat"], "lon": c["lon"]}, c["zoom"]
     fig.update_layout(map={"style": "carto-positron", "center": centro, "zoom": zoom},

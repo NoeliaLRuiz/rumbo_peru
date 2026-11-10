@@ -239,6 +239,11 @@ def main():
     fuera = ~oferta["lat"].between(-18.5, 0.1) | ~oferta["lon"].between(-81.5, -68.5)
     oferta.loc[fuera, ["lat", "lon"]] = None
     oferta = correcciones_manuales(oferta)
+    # Logos obtenidos de la web oficial de cada institución (data/obtener_logos.py)
+    archivo_logos = RAIZ / "data" / "logos.csv"
+    if archivo_logos.exists():
+        logos = pd.read_csv(archivo_logos, dtype=str).dropna(subset=["logo"])
+        oferta["logo_web"] = oferta["codigo"].map(dict(zip(logos["codigo"], logos["logo"])))
     oferta = oferta.drop(columns="familia").drop_duplicates()
     oferta.to_csv(RAIZ / "data" / "oferta.csv", index=False, encoding="utf-8")
 
