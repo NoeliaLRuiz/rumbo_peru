@@ -105,6 +105,11 @@ Construí Rumbo con **Claude Code** como co-founder técnico:
 
 ---
 
+### Correcciones manuales (transparentes)
+- **`data/correcciones_manuales.csv`:** nombres oficiales y webs verificadas a mano. Por ejemplo, la EESPP Monterrico y la Escuela Nacional Superior de Ballet, que en el padrón figuran con su nombre corto.
+- **`data/instituciones_extra.csv`:** escuelas nacionales de arte con rango universitario que no están en SUNEDU ni en el padrón del MINEDU: Folklore José María Arguedas, Bellas Artes (ENSABAP) y Arte Dramático (ENSAD). Su fuente es su web oficial y su registro como unidades del pliego Educación en Transparencia Económica del MEF. La ubicación viene de OpenStreetMap; la de Folklore es aproximada (Av. Petit Thouars 421).
+- **`ai/perfiles_carreras.py`:** catálogo de perfiles de egreso referenciales para unas 45 carreras, que cubre el 97 % de la oferta. Cada perfil tiene competencias distintas para formación universitaria y técnica.
+
 ### Datos y limitaciones
 - **Fuentes:** SUNEDU, Programas de universidades licenciadas (corte de agosto de 2024), y MINEDU ESCALE, Censo Educativo 2025 (padrón y cuadro de carreras).
 - Los institutos pedagógicos no reportan sus especialidades en ese cuadro, así que aparecen como «Formación docente».

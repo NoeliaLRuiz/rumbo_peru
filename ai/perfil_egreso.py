@@ -7,6 +7,7 @@ import json
 import os
 
 from ai.areas import nombre_area
+from ai.perfiles_carreras import buscar_carrera
 
 MODELO = os.getenv("CLAUDE_MODEL", "claude-opus-5-5")
 
@@ -56,11 +57,19 @@ _PLANTILLA = {
 
 
 def _reglas(programa: str, nivel: str, area_id: str) -> dict:
+    """Sin IA: perfil de la carrera desde el catálogo (ai/perfiles_carreras.py);
+    si la carrera no está en el catálogo, una plantilla general por nivel."""
     p = _PLANTILLA.get(nivel, _PLANTILLA["técnica"])
+    carrera = buscar_carrera(programa)
+    if carrera:
+        nivel_alto = nivel in ("universitaria", "pedagógica")
+        sabras = carrera.get("uni" if nivel_alto else "tec") or carrera.get("tec" if nivel_alto else "uni")
+        return {"resumen": carrera["resumen"], "sabras_hacer": sabras, "donde_trabajar": carrera["donde"],
+                "enfoque": p["enfoque"], "fuente": "catálogo", "carrera": carrera["nombre"]}
     return {
         "resumen": f"Quien egresa de {programa.title()} ({nivel}) trabaja en el campo de "
                    f"{nombre_area(area_id).lower()}.",
-        "sabras_hacer": p["sabras"], "donde_trabajar": p["donde"], "enfoque": p["enfoque"], "fuente": "reglas",
+        "sabras_hacer": p["sabras"], "donde_trabajar": p["donde"], "enfoque": p["enfoque"], "fuente": "plantilla",
     }
 
 
@@ -75,7 +84,9 @@ def perfil_egreso(programa: str, nivel: str, area_id: str) -> dict:
             max_tokens=2000,
             system=SISTEMA,
             messages=[{"role": "user", "content": json.dumps(
-                {"carrera": programa, "nivel": nivel, "area": nombre_area(area_id)}, ensure_ascii=False)}],
+                {"carrera": programa, "nivel": nivel, "area": nombre_area(area_id),
+                 # el catálogo sirve de referencia para que la IA no se aleje de la profesión real
+                 "referencia": _reglas(programa, nivel, area_id)}, ensure_ascii=False)}],
             output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}},
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",

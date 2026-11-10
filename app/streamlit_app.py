@@ -31,7 +31,8 @@ st.set_page_config(page_title="Rumbo · Orientación vocacional", page_icon="�
 # ============================================================
 AZUL, AZUL_OSCURO, CELESTE, AZUL_SUAVE, GRIS = "#1d4ed8", "#1e3a8a", "#38bdf8", "#eff6ff", "#64748b"
 COLOR_GESTION = {"Pública": AZUL_OSCURO, "Privada": CELESTE}
-ESCALA_AZUL = [[0, "#eff6ff"], [0.25, "#bfdbfe"], [0.5, "#60a5fa"], [0.75, "#2563eb"], [1, "#1e3a8a"]]
+ESCALA_AZUL = [[0, "#f0f9ff"], [0.12, "#bae6fd"], [0.3, "#7dd3fc"], [0.5, "#38bdf8"], [0.7, "#0284c7"],
+               [0.85, "#1d4ed8"], [1, "#172554"]]
 N_PASOS = 4  # bloques de preguntas: 6 preguntas por bloque, una de cada tipo de interés
 
 st.markdown(f"""
@@ -159,7 +160,7 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
-    df["logo"] = [logo_url(n, w) for n, w in zip(df["institucion"], df["web"])]
+    df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), df["web"])]
     return df
 
 
@@ -213,25 +214,57 @@ programas_reales = sorted(p for p in oferta["programa"].unique() if not p.starts
 METRICAS = {"Ofertas de estudio": "ofertas", "Instituciones": "instituciones", "% de oferta pública": "publica"}
 
 
-def mapa_regiones(df: pd.DataFrame, metrica: str, key: str, height: int = 520):
-    """Mapa coroplético del Perú por región (sin mapa base: limpio y rápido)."""
+@st.cache_data
+def centros_regiones() -> dict:
+    """Centro y tamaño aproximado de cada región (para hacer zoom sobre ella)."""
+    def coords(geom):
+        c = geom["coordinates"]
+        polys = c if geom["type"] == "MultiPolygon" else [c]
+        return [pt for poly in polys for anillo in poly for pt in anillo]
+    res = {}
+    for f in GEO["features"]:
+        pts = coords(f["geometry"])
+        lons, lats = [p[0] for p in pts], [p[1] for p in pts]
+        ancho = max(max(lons) - min(lons), max(lats) - min(lats))
+        res[f["properties"]["NOMBDEP"]] = {"lat": (min(lats) + max(lats)) / 2, "lon": (min(lons) + max(lons)) / 2,
+                                           "zoom": 8.6 if ancho < 0.5 else 7.2 if ancho < 2.5 else 6.2 if ancho < 5 else 5.4}
+    return res
+
+
+def mapa_regiones(df: pd.DataFrame, metrica: str, key: str, height: int = 520, destacar: str | None = None):
+    """Mapa coroplético interactivo del Perú por región: zoom con la rueda del mouse, arrastre y detalle al pasar."""
     agg = (df.groupby("departamento")
              .agg(ofertas=("programa", "size"), instituciones=("institucion", "nunique"),
                   publica=("gestion", lambda s: round((s == "Pública").mean() * 100, 1)))
              .reindex([f["properties"]["NOMBDEP"] for f in GEO["features"]], fill_value=0))
     col = METRICAS[metrica]
-    fig = go.Figure(go.Choropleth(
+    fig = go.Figure(go.Choroplethmap(
         geojson=GEO, featureidkey="properties.NOMBDEP", locations=agg.index, z=agg[col],
-        colorscale=ESCALA_AZUL, marker_line_color="#ffffff", marker_line_width=1.2,
+        colorscale=ESCALA_AZUL, marker_opacity=0.82, marker_line_color="#ffffff", marker_line_width=1.3,
         customdata=agg[["ofertas", "instituciones", "publica"]].values,
-        hovertemplate="<b>%{location}</b><br>Ofertas: %{customdata[0]:,}<br>Instituciones: %{customdata[1]:,}"
-                      "<br>Oferta pública: %{customdata[2]}%<extra></extra>",
-        colorbar={"title": {"text": metrica, "side": "right"}, "thickness": 12, "len": 0.75, "outlinewidth": 0},
+        hovertemplate="<b>%{location}</b><br>Ofertas de estudio: %{customdata[0]:,}"
+                      "<br>Instituciones: %{customdata[1]:,}<br>Oferta pública: %{customdata[2]}%<extra></extra>",
+        colorbar={"title": {"text": metrica, "side": "right"}, "thickness": 12, "len": 0.7, "outlinewidth": 0,
+                  "x": 0.98, "bgcolor": "rgba(255,255,255,.75)"},
     ))
-    fig.update_geos(fitbounds="locations", visible=False, bgcolor="rgba(0,0,0,0)")
-    fig.update_layout(height=height, margin={"l": 0, "r": 0, "t": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)",
-                      dragmode=False, font={"family": "Inter"})
-    st.plotly_chart(fig, width="stretch", key=key, config={"displayModeBar": False, "scrollZoom": False})
+    centro = {"lat": -9.4, "lon": -75.0}
+    zoom = 4.25
+    if destacar and destacar in agg.index:
+        fig.add_trace(go.Choroplethmap(  # contorno resaltado de la región elegida
+            geojson=GEO, featureidkey="properties.NOMBDEP", locations=[destacar], z=[1],
+            colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0)"]], showscale=False,
+            marker_line_color="#f59e0b", marker_line_width=4, hoverinfo="skip"))
+        c = centros_regiones()[destacar]
+        centro, zoom = {"lat": c["lat"], "lon": c["lon"]}, c["zoom"]
+    fig.update_layout(map={"style": "carto-positron", "center": centro, "zoom": zoom},
+                      height=height, margin={"l": 0, "r": 0, "t": 0, "b": 0}, paper_bgcolor="rgba(0,0,0,0)",
+                      font={"family": "Inter"}, hoverlabel={"bgcolor": "#fff", "bordercolor": AZUL,
+                                                            "font": {"family": "Inter", "color": "#0f172a"}},
+                      uirevision=f"{key}-{destacar}")
+    st.plotly_chart(fig, width="stretch", key=key,
+                    config={"scrollZoom": True, "displaylogo": False,
+                            "modeBarButtonsToRemove": ["select2d", "lasso2d", "toImage"]})
+    st.caption("Usa la rueda del mouse para hacer zoom y arrastra para moverte.")
     return agg
 
 
@@ -321,11 +354,13 @@ def perfil_cacheado(programa: str, nivel: str, area_id: str) -> dict:
 # ============================================================
 def comparador(prog_inicial: str, region_inicial: str, k: str):
     """Compara lado a lado hasta 4 instituciones que ofrecen una carrera, y el perfil de egreso por nivel."""
-    c1, c2, c3 = st.columns([2, 1, 1])
+    c1, c2, c4, c3 = st.columns([2, 1, 1, 1])
     prog = c1.selectbox("Carrera a comparar", programas_reales, index=programas_reales.index(prog_inicial),
                         format_func=str.title, key=f"{k}_prog")
     regiones = ["TODAS"] + departamentos
-    region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg")
+    region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg",
+                          format_func=str.title)
+    gestion = c4.selectbox("Gestión", ["Ambas", "Pública", "Privada"], key=f"{k}_gest")
     c3.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
     equivalentes = c3.toggle("Incluir carreras equivalentes", value=True, key=f"{k}_eq",
                              help="Junta, por ejemplo, Enfermería (universidad) y Enfermería Técnica (instituto)")
@@ -333,16 +368,18 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     sub = sub[~sub["programa"].str.startswith(SIN_CARRERA)]
     if region != "TODAS":
         sub = sub[sub["departamento"] == region]
+    if gestion != "Ambas":
+        sub = sub[sub["gestion"] == gestion]
     sub = sub.drop_duplicates(["institucion", "tipo", "programa", "distrito"])
     if sub.empty:
-        st.info("No hay instituciones con esta carrera en la región elegida. Prueba con «TODAS».")
+        st.info("No hay instituciones con esta carrera y filtros. Prueba con otra región o con «Ambas».")
         return
     # Por defecto: una de cada combinación tipo × gestión (universidad pública, instituto privado, ...)
     por_defecto = list(sub.groupby(["tipo", "gestion"], sort=False).head(1)
                        .sort_values("tipo", key=lambda t: t != "Universidad").index)[:4]
     elegidas = st.multiselect(
         "Instituciones a comparar (hasta 4)", list(sub.index), default=por_defecto, max_selections=4,
-        key=f"{k}_inst_{prog}_{region}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
+        key=f"{k}_inst_{prog}_{region}_{gestion}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
         format_func=lambda i: f"{sub.at[i, 'institucion']} · {sub.at[i, 'programa'].title()} · "
                               f"{sub.at[i, 'tipo']} · {sub.at[i, 'gestion']} · {sub.at[i, 'distrito'].title()}")
     if not elegidas:
@@ -449,26 +486,46 @@ with tab_test:
                 "¿Cuánta oferta hay en cada región? Pasa el mouse sobre el mapa", "panorama")
         izq, der = st.columns([3, 2], gap="large")
         with izq, st.container(border=True, key="mapa_panorama"):
-            metrica = st.segmented_control("Ver en el mapa", list(METRICAS), default="Ofertas de estudio",
-                                           key="met_panorama") or "Ofertas de estudio"
-            agg = mapa_regiones(oferta, metrica, key="ch_panorama", height=500)
+            m1, m2 = st.columns([3, 2])
+            with m1:
+                metrica = st.segmented_control("Ver en el mapa", list(METRICAS), default="Ofertas de estudio",
+                                               key="met_panorama") or "Ofertas de estudio"
+            enfoque = m2.selectbox("Enfocar una región", ["TODO EL PERÚ"] + departamentos, key="enfoque",
+                                   format_func=str.title)
+            destacar = None if enfoque == "TODO EL PERÚ" else enfoque
+            agg = mapa_regiones(oferta, metrica, key="ch_panorama", height=520, destacar=destacar)
         with der:
-            top = agg.sort_values(METRICAS[metrica], ascending=True).tail(10)
-            fig = go.Figure(go.Bar(x=top[METRICAS[metrica]], y=top.index.str.title(), orientation="h",
-                                   marker_color=AZUL, hovertemplate="%{y}: %{x}<extra></extra>"))
-            fig.update_layout(title={"text": f"Top 10 regiones · {metrica.lower()}", "font": {"size": 14}},
-                              height=330, margin={"l": 10, "r": 10, "t": 40, "b": 10},
-                              plot_bgcolor="#fff", font={"family": "Inter"})
-            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
-            por_tipo = oferta.groupby("tipo")["institucion"].nunique().sort_values(ascending=False)
-            dona = go.Figure(go.Pie(labels=por_tipo.index, values=por_tipo.values, hole=.6, sort=False,
-                                    marker={"colors": ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd",
-                                                       "#bfdbfe", "#38bdf8", "#0ea5e9"]},
-                                    textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>"))
-            dona.update_layout(title={"text": "Instituciones por tipo", "font": {"size": 14}}, height=230,
-                               margin={"l": 10, "r": 10, "t": 40, "b": 10}, font={"family": "Inter", "size": 11},
-                               legend={"font": {"size": 10}})
-            st.plotly_chart(dona, width="stretch", config={"displayModeBar": False})
+            if destacar:
+                r = oferta[oferta["departamento"] == destacar]
+                st.markdown(f"<div style='font-weight:800;font-size:1.3rem;color:{AZUL_OSCURO}'>"
+                            f"{destacar.title()}</div>", unsafe_allow_html=True)
+                kpis([(f"{len(r):,}", "ofertas de estudio"), (f"{r['institucion'].nunique():,}", "instituciones"),
+                      (f"{(r['gestion'] == 'Pública').mean():.0%}", "oferta pública")], claro_desde=2)
+                top_c = (r[~r["programa"].str.startswith(SIN_CARRERA)]["programa"].value_counts().head(8)
+                         .sort_values())
+                fig = go.Figure(go.Bar(x=top_c.values, y=[p.title()[:38] for p in top_c.index], orientation="h",
+                                       marker_color=AZUL, hovertemplate="%{y}: %{x} lugares<extra></extra>"))
+                fig.update_layout(title={"text": "Carreras más ofrecidas", "font": {"size": 14}}, height=330,
+                                  margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
+                                  font={"family": "Inter", "size": 11})
+                st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+            else:
+                top = agg.sort_values(METRICAS[metrica], ascending=True).tail(10)
+                fig = go.Figure(go.Bar(x=top[METRICAS[metrica]], y=top.index.str.title(), orientation="h",
+                                       marker_color=AZUL, hovertemplate="%{y}: %{x}<extra></extra>"))
+                fig.update_layout(title={"text": f"Top 10 regiones · {metrica.lower()}", "font": {"size": 14}},
+                                  height=330, margin={"l": 10, "r": 10, "t": 40, "b": 10},
+                                  plot_bgcolor="#fff", font={"family": "Inter"})
+                st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+                por_tipo = oferta.groupby("tipo")["institucion"].nunique().sort_values(ascending=False)
+                dona = go.Figure(go.Pie(labels=por_tipo.index, values=por_tipo.values, hole=.6, sort=False,
+                                        marker={"colors": ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd",
+                                                           "#bfdbfe", "#38bdf8", "#0ea5e9"]},
+                                        textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>"))
+                dona.update_layout(title={"text": "Instituciones por tipo", "font": {"size": 14}}, height=230,
+                                   margin={"l": 10, "r": 10, "t": 40, "b": 10}, font={"family": "Inter", "size": 11},
+                                   legend={"font": {"size": 10}})
+                st.plotly_chart(dona, width="stretch", config={"displayModeBar": False})
 
     # ---- Pasos 1-4: preguntas ----
     elif 1 <= paso <= N_PASOS:

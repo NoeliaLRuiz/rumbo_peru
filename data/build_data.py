@@ -69,11 +69,78 @@ def webs_universidades() -> dict[str, str]:
     return dict(zip(w["codigo"], w["web"]))
 
 
+MINUSCULAS = {"de", "del", "la", "las", "el", "los", "y", "e", "en", "para", "con", "a"}
+
+
+SIGLAS = {"SENATI", "ISIL", "IDAT", "SISE", "ADEX", "ISAM", "TECSUP", "SENCICO", "IPAE", "CEPEA", "ESAN", "UTEC",
+          "UCAL", "UPC", "USIL", "UNI", "SAC", "S.A.C.", "S.A.", "S.R.L.", "EIRL", "E.I.R.L.", "II", "III", "IV", "XXI"}
+
+
+def titulo(nombre: str) -> str:
+    """'UNIVERSIDAD NACIONAL MAYOR DE SAN MARCOS' -> 'Universidad Nacional Mayor de San Marcos'
+    (conectores en minúscula y siglas conocidas en mayúscula)."""
+    palabras = []
+    for i, w in enumerate(str(nombre).strip().split()):
+        if w.upper() in SIGLAS:
+            palabras.append(w.upper())
+        elif i > 0 and w.lower() in MINUSCULAS:
+            palabras.append(w.lower())
+        else:
+            palabras.append(w.capitalize())
+    return " ".join(palabras)
+
+
+# Nombre oficial según la Ley 30512 y la Ley General de Educación (el padrón solo trae el nombre corto)
+PREFIJOS = {
+    "P0": ("Escuela de Educación Superior Pedagógica", "Pública", "Privada"),
+    "S0": ("Escuela de Educación Superior Tecnológica", "Pública", "Privada"),
+    "K0": ("Instituto de Educación Superior Pedagógico", "Público", "Privado"),
+    "T0": ("Instituto de Educación Superior Tecnológico", "Público", "Privado"),
+    "M0": ("Escuela Superior de Formación Artística", "Pública", "Privada"),
+    "L0": ("CETPRO", "", ""),
+}
+
+
+def nombre_oficial(niv_mod: str, gestion: str, cen_edu: str) -> str:
+    """'P0', '2', 'MONTERRICO' -> 'Escuela de Educación Superior Pedagógica Pública Monterrico'"""
+    corto = titulo(cen_edu)
+    if normalizar(cen_edu).startswith(("ESCUELA", "INSTITUTO", "CETPRO", "CENTRO", "UNIVERSIDAD", "CONSERVATORIO")):
+        return corto
+    prefijo, pub, pri = PREFIJOS.get(niv_mod, ("", "", ""))
+    tipo_gestion = pub if gestion in ("1", "2") else pri
+    return " ".join(x for x in (prefijo, tipo_gestion, corto) if x)
+
+
+def correcciones_manuales(oferta: pd.DataFrame) -> pd.DataFrame:
+    """Correcciones verificadas a mano (data/correcciones_manuales.csv): nombre oficial y web por código."""
+    c = pd.read_csv(RAIZ / "data" / "correcciones_manuales.csv", dtype=str).set_index("codigo")
+    for codigo, fila in c.iterrows():
+        sel = oferta["codigo"] == codigo
+        if isinstance(fila["nombre"], str):
+            oferta.loc[sel, "institucion"] = fila["nombre"]
+        if isinstance(fila["web"], str):
+            oferta.loc[sel, "web"] = fila["web"]
+    return oferta
+
+
+def instituciones_extra() -> pd.DataFrame:
+    """Instituciones públicas que no están en SUNEDU ni en el padrón MINEDU (p. ej. escuelas nacionales
+    de arte con rango universitario). Fuente: su web oficial y el pliego Educación en Transparencia MEF."""
+    e = pd.read_csv(RAIZ / "data" / "instituciones_extra.csv", dtype=str)
+    e["lat"] = pd.to_numeric(e["lat"], errors="coerce")
+    e["lon"] = pd.to_numeric(e["lon"], errors="coerce")
+    e["nombre_corto"] = e["institucion"]
+    e["familia"] = ""
+    return e
+
+
 def universidades() -> pd.DataFrame:
     u = pd.read_csv(RAW / "sunedu_programas.csv", sep="|", encoding="latin-1", dtype=str)
     u = u[u["TIPO_NIVEL_ACADEMICO"] == "PREGRADO"]  # solo carreras profesionales
     return pd.DataFrame({
-        "institucion": u["NOMBRE"].str.title(),
+        "institucion": u["NOMBRE"].map(titulo),
+        "nombre_corto": u["NOMBRE"].map(titulo),
+        "codigo": "SUNEDU-" + u["CODIGO_ENTIDAD"],
         "tipo": "Universidad",
         "gestion": u["TIPO_GESTION"].map(lambda g: "Pública" if normalizar(g).startswith("PUBLIC") else "Privada"),
         "programa": u["DENOMINACION_PROGRAMA"].str.strip(),
@@ -95,7 +162,7 @@ def institutos() -> pd.DataFrame:
     campos = ["COD_MOD", "CEN_EDU", "NIV_MOD", "GESTION", "D_DPTO", "D_PROV", "D_DIST",
               "NLAT_IE", "NLONG_IE", "PAGWEB"]
     filas = [{k: r[k] for k in campos}
-             for r in DBF(RAW / "Padron.dbf", encoding="cp850")
+             for r in DBF(RAW / "Padron.dbf", encoding="latin-1")
              if r["NIV_MOD"] in TIPOS_IES]
     padron = pd.DataFrame(filas)
 
@@ -112,7 +179,9 @@ def institutos() -> pd.DataFrame:
     m["DESCRIP"] = m["DESCRIP"].fillna("OFERTA NO REPORTADA EN EL CENSO (consultar su web)")
 
     return pd.DataFrame({
-        "institucion": m["CEN_EDU"].str.title(),
+        "institucion": [nombre_oficial(n, g, c) for n, g, c in zip(m["NIV_MOD"], m["GESTION"], m["CEN_EDU"])],
+        "nombre_corto": m["CEN_EDU"].map(titulo),
+        "codigo": "MINEDU-" + m["COD_MOD"],
         "tipo": m["NIV_MOD"].map(TIPOS_IES),
         # GESTION: 1 = pública de gestión directa, 2 = pública de gestión privada, 3 = privada
         "gestion": m["GESTION"].map({"1": "Pública", "2": "Pública", "3": "Privada"}).fillna("Privada"),
@@ -159,7 +228,7 @@ def duracion_ies(niv_mod: str, duracion, horas) -> str:
 
 def main():
     descargar()
-    oferta = pd.concat([universidades(), institutos()], ignore_index=True)
+    oferta = pd.concat([universidades(), institutos(), instituciones_extra()], ignore_index=True)
     oferta["programa"] = oferta["programa"].str.upper()
     oferta["area"] = [clasificar(p, f) for p, f in zip(oferta["programa"], oferta["familia"])]
     # SUNEDU escribe 'JUNÍN' y MINEDU 'JUNIN': sin tildes para que coincidan entre sí y con el mapa
@@ -169,6 +238,7 @@ def main():
     # Coordenadas fuera del Perú = dato faltante
     fuera = ~oferta["lat"].between(-18.5, 0.1) | ~oferta["lon"].between(-81.5, -68.5)
     oferta.loc[fuera, ["lat", "lon"]] = None
+    oferta = correcciones_manuales(oferta)
     oferta = oferta.drop(columns="familia").drop_duplicates()
     oferta.to_csv(RAIZ / "data" / "oferta.csv", index=False, encoding="utf-8")
 
