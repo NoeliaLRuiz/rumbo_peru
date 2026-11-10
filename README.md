@@ -10,9 +10,15 @@
 Hacemos **orientación vocacional con todas las opciones reales** para **estudiantes de 5.º de secundaria y sus tutores** mediante **un test RIASEC interpretado con IA y cruzado con 11,868 ofertas de estudio oficiales**.
 
 ## 2. Founder
-**Noelia Fernanda Leon Ruiz** · `[foto: docs/capturas/founder.jpg]`
+<img src="docs/capturas/founder.jpg" alt="Noelia Fernanda León Ruiz" width="140" align="left" style="margin-right:16px">
 
-`[Una línea sobre ti y por qué eres la persona indicada para este problema: tu experiencia con educación, orientación, colegios o datos públicos.]`
+**Noelia Fernanda León Ruiz**: founder de Rumbo.
+
+Participante de la **Diplomatura de Especialización en Ciencia de Datos para las Ciencias Sociales y la Gestión Pública (Q-Lab PUCP)**. Creo que ningún estudiante del Perú debería elegir su futuro solo con la publicidad de las universidades privadas o con lo poco que conoce de su entorno. Mi trabajo en Rumbo consiste en convertir datos públicos que están dispersos (SUNEDU, el Censo Educativo del MINEDU, el MEF) en una herramienta que un estudiante, su familia y su tutor entienden en minutos. Así, cada joven puede ver **todas** sus opciones reales, públicas y privadas, universitarias y técnicas, cerca de casa.
+
+<br clear="left">
+
+> *Para completar: agrega tu foto en `docs/capturas/founder.jpg` y una línea sobre tu profesión o experiencia, por ejemplo en educación, gestión pública o análisis de datos.*
 
 Cómo cubro cada rol con agentes de IA:
 | Rol | Cómo |
