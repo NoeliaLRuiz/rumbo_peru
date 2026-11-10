@@ -1,0 +1,8 @@
+streamlit>=1.40
+pandas>=2.2
+folium>=0.17
+streamlit-folium>=0.22
+anthropic>=0.70
+# solo para reconstruir data/oferta.csv
+requests>=2.31
+dbfread>=2.0
