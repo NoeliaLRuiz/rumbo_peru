@@ -544,6 +544,7 @@ with tab_test:
         seccion(f"Paso {paso} de {N_PASOS}", "¿Cuánto te gustaría hacer cada actividad?",
                 "No hay respuestas buenas ni malas: responde lo que sientes", "preguntas")
         st.progress(paso / N_PASOS)
+        st.caption("Piensa en cuánto te gustaría hacer cada actividad, aunque nunca la hayas hecho.")
         indices = [paso - 1 + N_PASOS * d for d in range(len(DIMENSIONES))]  # una pregunta de cada tipo
         cols = st.columns(2)
         for n, i in enumerate(indices):
@@ -882,6 +883,15 @@ with tab_colegios:
                 "pedagógica (Ley 30512), escuelas de arte y CETPRO, con su gestión y ubicación.\n"
                 "- **Mapa:** límites departamentales del Perú (GeoJSON abierto).\n"
                 "- **Privacidad:** no guardamos respuestas ni datos personales de los estudiantes.")
+
+    seccion(4, "Sobre el test", "Cómo se construyeron las preguntas", "sobre_test")
+    st.markdown("- Se basa en el **modelo RIASEC de John Holland**: seis tipos de interés (Realista, Investigador, "
+                "Artístico, Social, Emprendedor y Convencional), con **4 actividades por tipo**.\n"
+                "- Las preguntas son de redacción propia y siguen el formato de los **marcadores RIASEC de dominio "
+                "público (AFPD)**, validados en español por Cupani y otros (2019): **una sola actividad por "
+                "pregunta**, cada una de un solo tipo y posible en la costa, la sierra o la selva.\n"
+                "- **Es una herramienta de orientación, no un diagnóstico.** Conviene conversar el resultado con "
+                "un tutor o psicólogo.")
 
 st.markdown('<div class="pie">Rumbo · Orientación vocacional con datos abiertos del Perú · '
             'Proyecto final Diplomatura Q-Lab PUCP 2026</div>', unsafe_allow_html=True)

@@ -1,7 +1,12 @@
 """Test de intereses basado en el modelo RIASEC de John Holland.
 
-Las preguntas son de redacción propia (no copian ningún test comercial).
-Cada respuesta va de 1 (no me gusta nada) a 4 (me encanta).
+Las preguntas son de redacción propia. Siguen el formato de los marcadores RIASEC de dominio público
+(AFPD; Armstrong y otros, 2008), validados en español por Cupani y otros (2019):
+  - una sola actividad concreta por pregunta (sin "o" que mezcle actividades distintas),
+  - cada pregunta mide un solo tipo de interés,
+  - actividades posibles en la costa, la sierra y la selva (sin suponer computadora ni redes sociales),
+  - 4 preguntas por tipo y respuesta de agrado de 1 (no me gusta) a 4 (me encanta).
+No son una traducción del instrumento AFPD: para medir con un test validado, usar sus ítems en español.
 """
 from ai.areas import AREAS
 
@@ -15,30 +20,30 @@ DIMENSIONES = {
 }
 
 PREGUNTAS = [
-    ("R", "Reparar un aparato o una bicicleta que se malogró"),
-    ("R", "Trabajar al aire libre: en el campo, una obra o con animales"),
-    ("R", "Armar, construir o fabricar algo con mis propias manos"),
-    ("R", "Manejar máquinas, herramientas o vehículos"),
+    ("R", "Reparar cosas que se malogran en casa"),
+    ("R", "Trabajar en el campo con plantas o animales"),
+    ("R", "Construir algo con tus manos, como un mueble o una maqueta"),
+    ("R", "Usar herramientas o máquinas para hacer un trabajo"),
     ("I", "Hacer experimentos para descubrir por qué pasa algo"),
-    ("I", "Resolver problemas de matemáticas o acertijos de lógica"),
-    ("I", "Leer o ver videos sobre ciencia, el cuerpo humano o la tecnología"),
-    ("I", "Investigar un tema a fondo hasta entenderlo bien"),
-    ("A", "Dibujar, pintar, diseñar o tomar fotos"),
-    ("A", "Escribir historias, poemas o contenido para redes"),
-    ("A", "Tocar un instrumento, cantar, bailar o actuar"),
-    ("A", "Decorar espacios o darle tu propio estilo a tu ropa"),
-    ("S", "Explicarle una tarea a un compañero que no la entiende"),
-    ("S", "Cuidar a alguien que está enfermo o necesita ayuda"),
-    ("S", "Participar en voluntariados o ayudar en mi comunidad"),
-    ("S", "Escuchar a mis amigos cuando tienen un problema"),
-    ("E", "Organizar un evento, una actividad o un negocio pequeño"),
-    ("E", "Convencer a otros de una idea o vender un producto"),
-    ("E", "Ser delegado, líder de grupo o representante"),
-    ("E", "Negociar y tomar decisiones aunque haya riesgo"),
-    ("C", "Llevar las cuentas o el control de gastos"),
-    ("C", "Ordenar información en tablas, listas o archivos"),
-    ("C", "Seguir instrucciones paso a paso con mucho cuidado"),
-    ("C", "Usar Excel o programas para organizar datos"),
+    ("I", "Resolver problemas difíciles de matemática"),
+    ("I", "Aprender cómo funciona el cuerpo humano"),
+    ("I", "Investigar un tema a fondo hasta entenderlo"),
+    ("A", "Dibujar o pintar"),
+    ("A", "Escribir cuentos, poemas o historias"),
+    ("A", "Presentarte en un escenario: actuar, bailar o tocar música"),
+    ("A", "Diseñar cómo se ve algo: un afiche, una prenda o un ambiente"),
+    ("S", "Explicarle un tema a un compañero que no lo entiende"),
+    ("S", "Cuidar a una persona enferma o mayor"),
+    ("S", "Participar en actividades para ayudar a tu comunidad"),
+    ("S", "Escuchar y aconsejar a alguien que tiene un problema"),
+    ("E", "Vender un producto o un servicio"),
+    ("E", "Convencer a un grupo de que apoye tu idea"),
+    ("E", "Dirigir un grupo como delegado o líder"),
+    ("E", "Iniciar tu propio negocio"),
+    ("C", "Llevar las cuentas del dinero de un negocio o de tu casa"),
+    ("C", "Llevar un registro ordenado de algo, como notas, ventas o inventario"),
+    ("C", "Revisar un trabajo con cuidado para encontrar errores"),
+    ("C", "Ordenar documentos para que todo esté en su lugar"),
 ]
 
 OPCIONES = {1: "No me gusta", 2: "Me da igual", 3: "Me gusta", 4: "Me encanta"}

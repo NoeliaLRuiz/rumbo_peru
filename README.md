@@ -105,6 +105,11 @@ Construí Rumbo con **Claude Code** como co-founder técnico:
 
 ---
 
+### Sobre el test vocacional
+- Se basa en el **modelo RIASEC de Holland**: 6 tipos de interés y 4 actividades por tipo (24 preguntas), en `ai/test_vocacional.py`.
+- Las preguntas son **de redacción propia** y siguen el formato de los marcadores RIASEC de dominio público (AFPD; Armstrong y otros, 2008), validados en español por [Cupani y otros (2019)](https://core.ac.uk/download/343669628.pdf). Cada pregunta tiene una sola actividad, mide un solo tipo de interés y es posible en cualquier región, sin suponer acceso a computadora. **No son una traducción del instrumento AFPD.**
+- **Próximo paso:** validar el test con respuestas reales (consistencia por tipo de interés, alfa de Cronbach).
+
 ### Correcciones manuales (transparentes)
 - **`data/correcciones_manuales.csv`:** nombres oficiales y webs verificadas a mano. Por ejemplo, la EESPP Monterrico y la Escuela Nacional Superior de Ballet, que en el padrón figuran con su nombre corto.
 - **`data/instituciones_extra.csv`:** escuelas nacionales de arte con rango universitario que no están en SUNEDU ni en el padrón del MINEDU: Folklore José María Arguedas, Bellas Artes (ENSABAP) y Arte Dramático (ENSAD). Su fuente es su web oficial y su registro como unidades del pliego Educación en Transparencia Económica del MEF. La ubicación viene de OpenStreetMap; la de Folklore es aproximada (Av. Petit Thouars 421).
