@@ -25,6 +25,11 @@ from ai.test_vocacional import (DIMENSIONES, EJEMPLO, OPCIONES, PREGUNTAS,  # no
                                 codigo_holland, puntajes, ranking_areas)
 
 st.set_page_config(page_title="Rumbo · Orientación vocacional", page_icon="🧭", layout="wide")
+# La página está en español: así el navegador no ofrece "traducirla" (eso cambiaba "o a la" por "oa la")
+st.html("<script>document.documentElement.lang = 'es';"
+        "if (!document.querySelector('meta[name=google]')) {const m = document.createElement('meta');"
+        "m.name = 'google'; m.content = 'notranslate'; document.head.appendChild(m);}</script>",
+        unsafe_allow_javascript=True)
 
 # ============================================================
 # Estilo
@@ -162,6 +167,7 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
+    df["perfil_link"] = [enlace_perfil(n, p, w) for n, p, w in zip(df["institucion"], df["programa"], df["web"])]
     logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)
     df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), logos_web)]
     return df
@@ -174,6 +180,17 @@ def cargar_geo() -> dict:
 
 def tiene_web(x) -> bool:
     return isinstance(x, str) and x.startswith("http")
+
+
+def enlace_perfil(institucion: str, programa: str, web) -> str:
+    """Enlace al perfil de egreso oficial de esa carrera en esa institución: busca dentro de su web oficial
+    (site:dominio); si no tiene web registrada, busca por el nombre completo de la institución."""
+    carrera = "" if str(programa).startswith(SIN_CARRERA) else str(programa).split("(")[0].replace(" - ", " ").title()
+    if tiene_web(web):
+        consulta = f'site:{urlparse(web).netloc.replace("www.", "")} "perfil de egreso" {carrera}'
+    else:
+        consulta = f'"{institucion}" "perfil de egreso" {carrera}'
+    return "https://www.google.com/search?q=" + quote_plus(consulta.strip())
 
 
 PALABRAS_NOMBRE = {"DE", "DEL", "LA", "EL", "Y", "E", "LOS", "LAS", "S.A.C.", "S.A.", "S.R.L.", "SAC"}
@@ -191,17 +208,21 @@ def logo_url(nombre: str, logo_web) -> str:
     return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
 
 
-def logo_html(r, tam: int = 40) -> str:
-    return (f"<img src='{r.logo}' width='{tam}' height='{tam}' style='border-radius:10px;object-fit:contain;"
-            f"background:#fff;border:1px solid #dbeafe;padding:3px;vertical-align:middle'>")
+def logo_html(r, alto: int = 56, ancho_max: int = 170) -> str:
+    """Logo con alto fijo y ancho proporcional (los logos horizontales no se encogen)."""
+    return (f"<img src='{r.logo}' style='height:{alto}px;width:auto;max-width:{ancho_max}px;min-width:{alto}px;"
+            f"object-fit:contain;border-radius:10px;background:#fff;border:1px solid #dbeafe;padding:4px;"
+            f"vertical-align:middle'>")
 
 
 COLUMNAS_TABLA = ["logo", "institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito",
-                  "web", "buscar"]
+                  "perfil_link", "web", "buscar"]
 CONFIG_TABLA = {
-    "logo": st.column_config.ImageColumn("", width="small"),
+    "logo": st.column_config.ImageColumn("Logo", width="small"),
     "institucion": "Institución", "tipo": "Tipo", "gestion": "Gestión", "programa": "Carrera",
     "departamento": "Región", "provincia": "Provincia", "distrito": "Distrito",
+    "perfil_link": st.column_config.LinkColumn("Perfil de egreso", display_text="Ver perfil ↗",
+                                               help="Perfil de egreso oficial de esta carrera en la web de la institución"),
     "web": st.column_config.LinkColumn("Sitio web", display_text="Ir a la web ↗"),
     "buscar": st.column_config.LinkColumn("Más info", display_text="Buscar ↗"),
 }
@@ -278,8 +299,8 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
         st.info("No hay coordenadas para mostrar en el mapa.")
         return
     sedes = (pts.groupby(["institucion", "tipo", "gestion", "distrito", "provincia", "lat", "lon"], dropna=False)
-                .agg(programas=("programa", lambda s: sorted(set(s))), web=("web", "first"), buscar=("buscar", "first"),
-                     logo=("logo", "first"))
+                .agg(programas=("programa", list), perfiles=("perfil_link", list), web=("web", "first"),
+                     buscar=("buscar", "first"), logo=("logo", "first"))
                 .reset_index())
     mapa = folium.Map(tiles="OpenStreetMap", control_scale=True)
     mapa.fit_bounds([[sedes["lat"].min(), sedes["lon"].min()], [sedes["lat"].max(), sedes["lon"].max()]],
@@ -287,8 +308,10 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
     Fullscreen(position="topright", title="Pantalla completa", title_cancel="Salir").add_to(mapa)
     grupo = MarkerCluster(options={"showCoverageOnHover": False}).add_to(mapa)
     for r in sedes.itertuples():
-        lista = "".join(f"<li>{p.title()}</li>" for p in r.programas[:6])
-        extra = f"<li>… y {len(r.programas) - 6} más</li>" if len(r.programas) > 6 else ""
+        carreras = sorted(dict(zip(r.programas, r.perfiles)).items())
+        lista = "".join(f'<li>{p.title()} · <a href="{link}" target="_blank">perfil de egreso ↗</a></li>'
+                        for p, link in carreras[:6])
+        extra = f"<li>… y {len(carreras) - 6} más</li>" if len(carreras) > 6 else ""
         enlaces = ((f'<a href="{r.web}" target="_blank">Ir a la web ↗</a> · ' if tiene_web(r.web) else "")
                    + f'<a href="{r.buscar}" target="_blank">Buscar ↗</a>')
         folium.CircleMarker(
@@ -296,11 +319,12 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
             fill_color=COLOR_GESTION[r.gestion], fill_opacity=0.95,
             tooltip=f"{r.institucion} · {r.gestion}",
             popup=folium.Popup(f"<div style='font-family:Inter,sans-serif;font-size:13px'>"
-                               f"{logo_html(r, 34)} <b style='color:{AZUL_OSCURO}'>{r.institucion}</b><br>"
+                               f"<div style='margin-bottom:6px'>{logo_html(r, 48, 160)}</div>"
+                               f"<b style='color:{AZUL_OSCURO}'>{r.institucion}</b><br>"
                                f"<span style='color:{GRIS}'>{r.tipo} · {r.gestion}<br>"
                                f"{r.distrito.title()}, {r.provincia.title()}</span>"
                                f"<ul style='padding-left:16px;margin:6px 0'>{lista}{extra}</ul>{enlaces}</div>",
-                               max_width=300),
+                               max_width=340),
         ).add_to(grupo)
     st_folium(mapa, height=height, use_container_width=True, returned_objects=[], key=key)
     st.markdown(LEYENDA, unsafe_allow_html=True)
@@ -391,9 +415,10 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     for col, i in zip(st.columns(len(elegidas)), elegidas):
         r = sub.loc[i]
         with col, st.container(border=True, key=f"card_cmp_{k}_{i}"):
-            st.markdown(f"<div style='display:flex;gap:10px;align-items:center;margin-bottom:4px'>{logo_html(r, 46)}"
-                        f"<div style='font-weight:800;font-size:1.02rem;color:{AZUL_OSCURO};line-height:1.2'>"
-                        f"{r.institucion}</div></div>"
+            st.markdown(f"<div style='height:78px;display:flex;align-items:center;margin-bottom:8px'>"
+                        f"{logo_html(r, 70, 220)}</div>"
+                        f"<div style='font-weight:800;font-size:1.02rem;color:{AZUL_OSCURO};line-height:1.25'>"
+                        f"{r.institucion}</div>"
                         f"<div style='color:{GRIS};font-size:.9rem;margin-bottom:6px'>{r.programa.title()}</div>"
                         f"{pill_gestion(r.gestion)}<span class='pill tipo'>{r.tipo}</span>"
                         f"<div class='dato'><b>Al egresar:</b> {r.certificacion}</div>"
@@ -402,9 +427,11 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
                         f"{'gratuita o de bajo costo' if r.gestion == 'Pública' else 'pensión, consultar'}</div>"
                         f"<div class='dato'><b>Ubicación:</b> {r.distrito.title()}, {r.departamento.title()}</div>",
                         unsafe_allow_html=True)
+            st.link_button("Ver su perfil de egreso oficial ↗", r.perfil_link, width="stretch", type="primary")
             if tiene_web(r.web):
-                st.link_button("Ver perfil oficial en su web ↗", r.web, width="stretch", type="primary")
-            st.link_button("Buscar más información ↗", r.buscar, width="stretch")
+                st.link_button("Ir a su web ↗", r.web, width="stretch")
+            else:
+                st.link_button("Buscar más información ↗", r.buscar, width="stretch")
 
     izq, der = st.columns([3, 2])
     with izq:
@@ -620,7 +647,7 @@ with tab_test:
         if not sel.empty:
             tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
             tabla["programa"] = tabla["programa"].str.title()
-            st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA, height=300)
+            st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56, height=300)
 
         # 05 Comparar
         seccion(5, "Compara instituciones y perfil de egreso",
@@ -749,7 +776,7 @@ with tab_explorar:
             with st.container(border=True, key="mapa_exp_pts"):
                 mapa_instituciones(q, key=f"mapa_exp_{texto}_{region_e}_{gestion_e}_{len(q)}", height=520)
     with v3:
-        st.dataframe(q[COLUMNAS_TABLA].head(1000), hide_index=True, width="stretch", column_config=CONFIG_TABLA,
+        st.dataframe(q[COLUMNAS_TABLA].head(1000), hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56,
                      height=480)
         if len(q) > 1000:
             st.caption(f"Se muestran 1,000 de {len(q):,} resultados. Usa los filtros para acotar.")

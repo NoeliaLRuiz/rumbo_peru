@@ -26,7 +26,7 @@ PREGUNTAS = [
     ("A", "Dibujar, pintar, diseñar o tomar fotos"),
     ("A", "Escribir historias, poemas o contenido para redes"),
     ("A", "Tocar un instrumento, cantar, bailar o actuar"),
-    ("A", "Decorar o darle un estilo propio a un espacio o a la ropa"),
+    ("A", "Decorar espacios o darle tu propio estilo a tu ropa"),
     ("S", "Explicarle una tarea a un compañero que no la entiende"),
     ("S", "Cuidar a alguien que está enfermo o necesita ayuda"),
     ("S", "Participar en voluntariados o ayudar en mi comunidad"),
