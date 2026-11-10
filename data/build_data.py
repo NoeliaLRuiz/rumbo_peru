@@ -18,6 +18,7 @@ from dbfread import DBF
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 from ai.areas import clasificar, normalizar  # noqa: E402
+from data.verificar_webs import limpiar  # noqa: E402
 
 RAW = RAIZ / "data" / "raw"
 ESCALE = "https://escale.minedu.gob.pe/documents/inicio/Bases%20de%20datos/A.%20Censo%20Educativo/2025/"
@@ -48,6 +49,24 @@ def descargar():
             zipfile.ZipFile(destino).extractall(RAW)
 
 
+def webs_ok() -> dict[str, str]:
+    """URLs que respondieron en data/verificar_webs.py -> URL final (después de redirecciones)."""
+    archivo = RAIZ / "data" / "webs_verificadas.csv"
+    if not archivo.exists():
+        return {}
+    v = pd.read_csv(archivo, keep_default_na=False)
+    v = v[v["ok"].astype(str) == "True"]
+    return dict(zip(v["url_original"], v["url_final"]))
+
+
+def webs_universidades() -> dict[str, str]:
+    """Código SUNEDU -> web oficial, solo si respondió o fue verificada a mano."""
+    w = pd.read_csv(RAIZ / "data" / "webs_universidades.csv", dtype=str)
+    ok = webs_ok()
+    w = w[w["web"].isin(ok.keys()) | (w["verificado_manual"] == "True")]
+    return dict(zip(w["codigo"], w["web"]))
+
+
 def universidades() -> pd.DataFrame:
     u = pd.read_csv(RAW / "sunedu_programas.csv", sep="|", encoding="latin-1", dtype=str)
     u = u[u["TIPO_NIVEL_ACADEMICO"] == "PREGRADO"]  # solo carreras profesionales
@@ -62,7 +81,7 @@ def universidades() -> pd.DataFrame:
         "distrito": u["DISTRITO_LOCAL"],
         "lat": pd.to_numeric(u["LATITUD_UBICACION"], errors="coerce"),
         "lon": pd.to_numeric(u["LONGITUD_UBICACION"], errors="coerce"),
-        "web": "",
+        "web": u["CODIGO_ENTIDAD"].map(webs_universidades()).fillna(""),
         "fuente": "SUNEDU",
     })
 
@@ -97,7 +116,7 @@ def institutos() -> pd.DataFrame:
         "distrito": m["D_DIST"],
         "lat": pd.to_numeric(m["NLAT_IE"], errors="coerce"),
         "lon": pd.to_numeric(m["NLONG_IE"], errors="coerce"),
-        "web": m["PAGWEB"].fillna(""),
+        "web": m["PAGWEB"].fillna("").map(lambda w: webs_ok().get(limpiar(w), "")),
         "fuente": "MINEDU",
     })
 

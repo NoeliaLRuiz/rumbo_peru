@@ -4,6 +4,7 @@ Correr:  streamlit run app/streamlit_app.py
 """
 import sys
 from pathlib import Path
+from urllib.parse import quote_plus
 
 import folium
 import pandas as pd
@@ -25,7 +26,25 @@ COLOR_GESTION = {"Pública": "#1a7f5a", "Privada": "#2f5bd3"}
 
 @st.cache_data
 def cargar_oferta() -> pd.DataFrame:
-    return pd.read_csv(RAIZ / "data" / "oferta.csv")
+    df = pd.read_csv(RAIZ / "data" / "oferta.csv")
+    df["web"] = df["web"].where(df["web"].notna() & (df["web"] != ""), None)
+    # Para todas las instituciones: búsqueda en Google con nombre + distrito (por si no hay web oficial)
+    prefijo = df["tipo"].map({"Instituto tecnológico": "Instituto", "Instituto / escuela pedagógica":
+                              "Instituto pedagógico", "Escuela de arte": "Escuela", "CETPRO (técnico-productiva)":
+                              "CETPRO"}).fillna("")
+    consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
+    df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
+    return df
+
+
+COLUMNAS_TABLA = ["institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito",
+                  "web", "buscar"]
+CONFIG_TABLA = {
+    "institucion": "Institución", "tipo": "Tipo", "gestion": "Gestión", "programa": "Carrera",
+    "departamento": "Región", "provincia": "Provincia", "distrito": "Distrito",
+    "web": st.column_config.LinkColumn("Sitio web", display_text="🌐 Ir a la web"),
+    "buscar": st.column_config.LinkColumn("Más info", display_text="🔎 Buscar"),
+}
 
 
 oferta = cargar_oferta()
@@ -157,22 +176,25 @@ with tab_test:
                     folium.CircleMarker(
                         [r.lat, r.lon], radius=7, color=COLOR_GESTION[r.gestion], fill=True, fill_opacity=0.85,
                         popup=folium.Popup(f"<b>{r.institucion}</b><br>{r.tipo} · {r.gestion}<br>"
-                                           f"{r.programa.title()}<br>{r.distrito}, {r.provincia}", max_width=280),
+                                           f"{r.programa.title()}<br>{r.distrito}, {r.provincia}<br>"
+                                           + (f'<a href="{r.web}" target="_blank">🌐 Ir a la web</a> · '
+                                              if r.web else "")
+                                           + f'<a href="{r.buscar}" target="_blank">🔎 Buscar</a>',
+                                           max_width=280),
                     ).add_to(grupo)
                 st_folium(mapa, height=430, use_container_width=True, returned_objects=[])
                 st.caption("🟢 Pública · 🔵 Privada")
 
-            tabla = (sel[["institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito"]]
-                     .sort_values(["gestion", "tipo", "institucion"]))
+            tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
             tabla["programa"] = tabla["programa"].str.title()
-            st.dataframe(tabla, hide_index=True, width="stretch")
+            st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA)
 
             # Reporte para el tutor (lo que paga el colegio)
             reporte = (f"# Reporte vocacional - Rumbo\n\nPerfil: {codigo_holland(punt)}\n\n{rec['perfil']}\n\n"
                        "## Carreras sugeridas\n" + "\n".join(f"- {c['programa'].title()} ({c['nivel']})"
                                                              for c in rec["carreras"])
                        + f"\n\n## Dónde estudiar {prog.title()} ({region}, {gestion})\n"
-                       + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito}"
+                       + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito} - {r.web or r.buscar}"
                                    for r in tabla.head(30).itertuples()))
             st.download_button("📄 Descargar reporte para el tutor", reporte,
                                file_name="reporte_rumbo.md", mime="text/markdown")
@@ -201,5 +223,4 @@ with tab_explorar:
     resumen = q.groupby(["tipo", "gestion"]).size().unstack(fill_value=0)
     if not resumen.empty:
         st.bar_chart(resumen, color=[COLOR_GESTION[g] for g in resumen.columns], horizontal=True)
-    st.dataframe(q[["institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito"]]
-                 .head(500), hide_index=True, width="stretch")
+    st.dataframe(q[COLUMNAS_TABLA].head(500), hide_index=True, width="stretch", column_config=CONFIG_TABLA)
