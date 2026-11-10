@@ -130,5 +130,16 @@ def clasificar(programa: str, familia: str = "") -> str:
     return FAMILIA_SUNEDU.get(normalizar(familia), "otros")
 
 
+ICONOS = {
+    "tecnologia": "💻", "salud": "🩺", "educacion": "📚", "agro_ambiente": "🌱", "construccion": "🏗️",
+    "comunicacion": "🎙️", "arte_diseno": "🎨", "derecho_sociales": "⚖️", "servicios": "🍳",
+    "negocios": "📈", "ingenieria": "⚙️", "ciencias": "🔬",
+}
+
+
 def nombre_area(area_id: str) -> str:
     return AREAS.get(area_id, {}).get("nombre", "Otros")
+
+
+def icono_area(area_id: str) -> str:
+    return ICONOS.get(area_id, "🎓")

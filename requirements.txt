@@ -6,3 +6,4 @@ anthropic>=0.70
 # solo para reconstruir data/oferta.csv
 requests>=2.31
 dbfread>=2.0
+plotly>=5.20
