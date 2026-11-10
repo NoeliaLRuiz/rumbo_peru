@@ -5,7 +5,8 @@ Correr:  streamlit run app/streamlit_app.py
 import json
 import sys
 from pathlib import Path
-from urllib.parse import quote_plus
+import base64
+from urllib.parse import quote_plus, urlparse
 
 import folium
 import pandas as pd
@@ -154,6 +155,7 @@ def cargar_oferta() -> pd.DataFrame:
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
+    df["logo"] = [logo_url(n, w) for n, w in zip(df["institucion"], df["web"])]
     return df
 
 
@@ -166,9 +168,30 @@ def tiene_web(x) -> bool:
     return isinstance(x, str) and x.startswith("http")
 
 
-COLUMNAS_TABLA = ["institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito",
+PALABRAS_NOMBRE = {"DE", "DEL", "LA", "EL", "Y", "E", "LOS", "LAS", "S.A.C.", "S.A.", "S.R.L.", "SAC"}
+
+
+def logo_url(nombre: str, web) -> str:
+    """Logo de la institución: el ícono oficial de su web (servicio de favicons de Google).
+    Sin web: un círculo azul con sus iniciales (SVG en línea), para que todas tengan imagen."""
+    if tiene_web(web):
+        return f"https://www.google.com/s2/favicons?domain={urlparse(web).netloc}&sz=128"
+    iniciales = "".join(w[0] for w in str(nombre).upper().split() if w not in PALABRAS_NOMBRE and w[0].isalpha())[:2]
+    svg = (f"<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><circle cx='32' cy='32' r='32' "
+           f"fill='#1d4ed8'/><text x='32' y='41' font-family='Arial' font-size='24' font-weight='700' "
+           f"fill='white' text-anchor='middle'>{iniciales or '?'}</text></svg>")
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
+
+
+def logo_html(r, tam: int = 40) -> str:
+    return (f"<img src='{r.logo}' width='{tam}' height='{tam}' style='border-radius:10px;object-fit:contain;"
+            f"background:#fff;border:1px solid #dbeafe;padding:3px;vertical-align:middle'>")
+
+
+COLUMNAS_TABLA = ["logo", "institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito",
                   "web", "buscar"]
 CONFIG_TABLA = {
+    "logo": st.column_config.ImageColumn("", width="small"),
     "institucion": "Institución", "tipo": "Tipo", "gestion": "Gestión", "programa": "Carrera",
     "departamento": "Región", "provincia": "Provincia", "distrito": "Distrito",
     "web": st.column_config.LinkColumn("Sitio web", display_text="Ir a la web ↗"),
@@ -215,7 +238,8 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
         st.info("No hay coordenadas para mostrar en el mapa.")
         return
     sedes = (pts.groupby(["institucion", "tipo", "gestion", "distrito", "provincia", "lat", "lon"], dropna=False)
-                .agg(programas=("programa", lambda s: sorted(set(s))), web=("web", "first"), buscar=("buscar", "first"))
+                .agg(programas=("programa", lambda s: sorted(set(s))), web=("web", "first"), buscar=("buscar", "first"),
+                     logo=("logo", "first"))
                 .reset_index())
     mapa = folium.Map(tiles="OpenStreetMap", control_scale=True)
     mapa.fit_bounds([[sedes["lat"].min(), sedes["lon"].min()], [sedes["lat"].max(), sedes["lon"].max()]],
@@ -232,7 +256,7 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
             fill_color=COLOR_GESTION[r.gestion], fill_opacity=0.95,
             tooltip=f"{r.institucion} · {r.gestion}",
             popup=folium.Popup(f"<div style='font-family:Inter,sans-serif;font-size:13px'>"
-                               f"<b style='color:{AZUL_OSCURO}'>{r.institucion}</b><br>"
+                               f"{logo_html(r, 34)} <b style='color:{AZUL_OSCURO}'>{r.institucion}</b><br>"
                                f"<span style='color:{GRIS}'>{r.tipo} · {r.gestion}<br>"
                                f"{r.distrito.title()}, {r.provincia.title()}</span>"
                                f"<ul style='padding-left:16px;margin:6px 0'>{lista}{extra}</ul>{enlaces}</div>",
@@ -323,7 +347,9 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     for col, i in zip(st.columns(len(elegidas)), elegidas):
         r = sub.loc[i]
         with col, st.container(border=True, key=f"card_cmp_{k}_{i}"):
-            st.markdown(f"<div style='font-weight:800;font-size:1.05rem;color:{AZUL_OSCURO}'>{r.institucion}</div>"
+            st.markdown(f"<div style='display:flex;gap:10px;align-items:center;margin-bottom:4px'>{logo_html(r, 46)}"
+                        f"<div style='font-weight:800;font-size:1.02rem;color:{AZUL_OSCURO};line-height:1.2'>"
+                        f"{r.institucion}</div></div>"
                         f"<div style='color:{GRIS};font-size:.9rem;margin-bottom:6px'>{r.programa.title()}</div>"
                         f"{pill_gestion(r.gestion)}<span class='pill tipo'>{r.tipo}</span>"
                         f"<div class='dato'><b>Al egresar:</b> {r.certificacion}</div>"
