@@ -25,7 +25,7 @@ ESQUEMA = {
                     "programa": {"type": "string", "description": "Copiado EXACTO de la lista de programas"},
                     "area_id": {"type": "string"},
                     "por_que": {"type": "string"},
-                    "nivel": {"type": "string", "enum": ["universitaria", "técnica", "técnico-productiva"]},
+                    "nivel": {"type": "string", "enum": ["universitaria", "pedagógica", "técnica", "técnico-productiva"]},
                 },
                 "required": ["programa", "area_id", "por_que", "nivel"],
                 "additionalProperties": False,
@@ -70,6 +70,8 @@ def _nivel(tipo: str) -> str:
         return "universitaria"
     if tipo.startswith("CETPRO"):
         return "técnico-productiva"
+    if "pedagóg" in tipo:
+        return "pedagógica"
     return "técnica"
 
 

@@ -29,7 +29,9 @@ FUENTES = {
 }
 TIPOS_IES = {
     "T0": "Instituto tecnológico",
-    "K0": "Instituto / escuela pedagógica",
+    "S0": "Escuela superior tecnológica (EEST)",   # Ley 30512
+    "K0": "Instituto pedagógico",
+    "P0": "Escuela superior pedagógica (EESP)",    # Ley 30512 (p. ej. Monterrico)
     "M0": "Escuela de arte",
     "L0": "CETPRO (técnico-productiva)",
 }
@@ -104,8 +106,10 @@ def institutos() -> pd.DataFrame:
     m = padron.merge(carreras, on="COD_MOD", how="left")
     # Los pedagógicos no reportan carreras en este cuadro del censo: se listan como formación docente.
     sin_carrera = m["DESCRIP"].isna()
-    m.loc[sin_carrera & (m["NIV_MOD"] == "K0"), "DESCRIP"] = "FORMACIÓN DOCENTE (consultar especialidades)"
-    m = m.dropna(subset=["DESCRIP"])
+    m.loc[sin_carrera & m["NIV_MOD"].isin(["K0", "P0"]), "DESCRIP"] = "FORMACIÓN DOCENTE (consultar especialidades)"
+    # El resto de instituciones activas que no reportó carreras en el censo (p. ej. SENATI, Cibertec):
+    # se incluyen igual, para que aparezcan en el mapa y en la búsqueda por nombre.
+    m["DESCRIP"] = m["DESCRIP"].fillna("OFERTA NO REPORTADA EN EL CENSO (consultar su web)")
 
     return pd.DataFrame({
         "institucion": m["CEN_EDU"].str.title(),
@@ -130,6 +134,10 @@ def certificacion_ies(niv_mod: str, cuadro) -> str:
     """Qué obtiene el egresado, según el tipo de institución (Ley 30512) y el ciclo (CETPRO)."""
     if niv_mod == "T0":
         return "Título de Profesional Técnico o Técnico"
+    if niv_mod == "S0":
+        return "Grado de Bachiller Técnico y Título Profesional (Ley 30512)"
+    if niv_mod == "P0":
+        return "Grado de Bachiller en Educación y Título de Licenciado en Educación (Ley 30512)"
     if niv_mod == "K0":
         return "Título de Profesor (y grado de Bachiller en Educación en escuelas licenciadas)"
     if niv_mod == "M0":
@@ -140,12 +148,12 @@ def certificacion_ies(niv_mod: str, cuadro) -> str:
 
 
 def duracion_ies(niv_mod: str, duracion, horas) -> str:
-    d = str(duracion or "").strip()
-    if niv_mod == "T0":
+    d = str(duracion).strip() if pd.notna(duracion) else ""
+    if niv_mod in ("T0", "S0"):
         return f"{d} años" if d.isdigit() and 1 <= int(d) <= 5 else "2 a 3 años"
-    if niv_mod in ("K0", "M0"):
+    if niv_mod in ("K0", "P0", "M0"):
         return "5 años"
-    h = int(horas or 0)
+    h = int(horas) if pd.notna(horas) and horas else 0
     return f"{h:,} horas" if h > 0 else "Menos de 1 año"
 
 
@@ -154,8 +162,10 @@ def main():
     oferta = pd.concat([universidades(), institutos()], ignore_index=True)
     oferta["programa"] = oferta["programa"].str.upper()
     oferta["area"] = [clasificar(p, f) for p, f in zip(oferta["programa"], oferta["familia"])]
-    for col in ["departamento", "provincia", "distrito"]:
-        oferta[col] = oferta[col].str.upper().str.strip()
+    # SUNEDU escribe 'JUNÍN' y MINEDU 'JUNIN': sin tildes para que coincidan entre sí y con el mapa
+    for col in ["departamento", "provincia"]:
+        oferta[col] = oferta[col].map(normalizar)
+    oferta["distrito"] = oferta["distrito"].str.upper().str.strip()
     # Coordenadas fuera del Perú = dato faltante
     fuera = ~oferta["lat"].between(-18.5, 0.1) | ~oferta["lon"].between(-81.5, -68.5)
     oferta.loc[fuera, ["lat", "lon"]] = None

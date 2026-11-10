@@ -34,6 +34,12 @@ _PLANTILLA = {
                    "Investigar y seguir estudiando un posgrado"],
         "donde": ["Empresas privadas e instituciones del Estado", "Consultoras y ONG", "Tu propio emprendimiento"],
     },
+    "pedagógica": {
+        "enfoque": "Formación docente: pedagogía, didáctica y práctica en aulas reales.",
+        "sabras": ["Planificar y conducir sesiones de aprendizaje", "Evaluar el progreso de tus estudiantes",
+                   "Atender la diversidad e inclusión en el aula", "Trabajar con las familias y la comunidad"],
+        "donde": ["Colegios públicos y privados", "Programas educativos del Estado y ONG", "Proyectos de educación comunitaria"],
+    },
     "técnica": {
         "enfoque": "Formación práctica: sales a trabajar más rápido, haciendo.",
         "sabras": ["Ejecutar procesos técnicos de tu especialidad", "Usar equipos, herramientas y software del sector",
