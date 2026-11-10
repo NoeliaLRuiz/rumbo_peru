@@ -453,8 +453,8 @@ with st.sidebar:
     st.caption("No guardamos tus respuestas ni datos personales.")
     st.button("Reiniciar test", on_click=reiniciar, width="stretch")
 
-tab_test, tab_explorar, tab_comparar, tab_colegios = st.tabs(
-    ["🧭  Test vocacional", "🗺️  Explorar la oferta", "⚖️  Comparar", "🏫  Para colegios"])
+tab_test, tab_panorama, tab_explorar, tab_comparar, tab_colegios = st.tabs(
+    ["🧭  Test vocacional", "🗺️  Panorama nacional", "🔎  Explorar la oferta", "⚖️  Comparar", "🏫  Para colegios"])
 
 # ============================================================
 # TEST
@@ -464,7 +464,7 @@ with tab_test:
 
     # ---- Paso 0: bienvenida + panorama nacional ----
     if paso == 0:
-        seccion(1, "Empieza tu test vocacional", "24 actividades en 4 pasos cortos · unos 3 minutos", "inicio")
+        seccion("Comienza aquí", "Empieza tu test vocacional", "24 actividades en 4 pasos cortos · unos 3 minutos", "inicio")
         izq, der = st.columns([3, 2], gap="large")
         with izq, st.container(border=True, key="card_inicio"):
             ss["depto"] = st.selectbox("¿En qué región vives?", departamentos,
@@ -482,50 +482,6 @@ with tab_test:
                         "4. **Comparación** de instituciones públicas y privadas\n"
                         "5. Un **reporte** para tu tutor o tu familia")
 
-        seccion(2, "Panorama nacional de la educación superior",
-                "¿Cuánta oferta hay en cada región? Pasa el mouse sobre el mapa", "panorama")
-        izq, der = st.columns([3, 2], gap="large")
-        with izq, st.container(border=True, key="mapa_panorama"):
-            m1, m2 = st.columns([3, 2])
-            with m1:
-                metrica = st.segmented_control("Ver en el mapa", list(METRICAS), default="Ofertas de estudio",
-                                               key="met_panorama") or "Ofertas de estudio"
-            enfoque = m2.selectbox("Enfocar una región", ["TODO EL PERÚ"] + departamentos, key="enfoque",
-                                   format_func=str.title)
-            destacar = None if enfoque == "TODO EL PERÚ" else enfoque
-            agg = mapa_regiones(oferta, metrica, key="ch_panorama", height=520, destacar=destacar)
-        with der:
-            if destacar:
-                r = oferta[oferta["departamento"] == destacar]
-                st.markdown(f"<div style='font-weight:800;font-size:1.3rem;color:{AZUL_OSCURO}'>"
-                            f"{destacar.title()}</div>", unsafe_allow_html=True)
-                kpis([(f"{len(r):,}", "ofertas de estudio"), (f"{r['institucion'].nunique():,}", "instituciones"),
-                      (f"{(r['gestion'] == 'Pública').mean():.0%}", "oferta pública")], claro_desde=2)
-                top_c = (r[~r["programa"].str.startswith(SIN_CARRERA)]["programa"].value_counts().head(8)
-                         .sort_values())
-                fig = go.Figure(go.Bar(x=top_c.values, y=[p.title()[:38] for p in top_c.index], orientation="h",
-                                       marker_color=AZUL, hovertemplate="%{y}: %{x} lugares<extra></extra>"))
-                fig.update_layout(title={"text": "Carreras más ofrecidas", "font": {"size": 14}}, height=330,
-                                  margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
-                                  font={"family": "Inter", "size": 11})
-                st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
-            else:
-                top = agg.sort_values(METRICAS[metrica], ascending=True).tail(10)
-                fig = go.Figure(go.Bar(x=top[METRICAS[metrica]], y=top.index.str.title(), orientation="h",
-                                       marker_color=AZUL, hovertemplate="%{y}: %{x}<extra></extra>"))
-                fig.update_layout(title={"text": f"Top 10 regiones · {metrica.lower()}", "font": {"size": 14}},
-                                  height=330, margin={"l": 10, "r": 10, "t": 40, "b": 10},
-                                  plot_bgcolor="#fff", font={"family": "Inter"})
-                st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
-                por_tipo = oferta.groupby("tipo")["institucion"].nunique().sort_values(ascending=False)
-                dona = go.Figure(go.Pie(labels=por_tipo.index, values=por_tipo.values, hole=.6, sort=False,
-                                        marker={"colors": ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd",
-                                                           "#bfdbfe", "#38bdf8", "#0ea5e9"]},
-                                        textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>"))
-                dona.update_layout(title={"text": "Instituciones por tipo", "font": {"size": 14}}, height=230,
-                                   margin={"l": 10, "r": 10, "t": 40, "b": 10}, font={"family": "Inter", "size": 11},
-                                   legend={"font": {"size": 10}})
-                st.plotly_chart(dona, width="stretch", config={"displayModeBar": False})
 
     # ---- Pasos 1-4: preguntas ----
     elif 1 <= paso <= N_PASOS:
@@ -684,6 +640,55 @@ with tab_test:
     else:
         ss["paso"] = 0
         st.rerun()
+
+# ============================================================
+# PANORAMA NACIONAL
+# ============================================================
+with tab_panorama:
+    seccion("Panorama nacional", "La educación superior en el Perú, región por región",
+            "Elige qué medir, enfoca una región y usa el zoom del mapa", "panorama")
+    izq, der = st.columns([3, 2], gap="large")
+    with izq, st.container(border=True, key="mapa_panorama"):
+        m1, m2 = st.columns([3, 2])
+        with m1:
+            metrica = st.segmented_control("Ver en el mapa", list(METRICAS), default="Ofertas de estudio",
+                                           key="met_panorama") or "Ofertas de estudio"
+        enfoque = m2.selectbox("Enfocar una región", ["TODO EL PERÚ"] + departamentos, key="enfoque",
+                               format_func=str.title)
+        destacar = None if enfoque == "TODO EL PERÚ" else enfoque
+        agg = mapa_regiones(oferta, metrica, key="ch_panorama", height=520, destacar=destacar)
+    with der:
+        if destacar:
+            r = oferta[oferta["departamento"] == destacar]
+            st.markdown(f"<div style='font-weight:800;font-size:1.3rem;color:{AZUL_OSCURO}'>"
+                        f"{destacar.title()}</div>", unsafe_allow_html=True)
+            kpis([(f"{len(r):,}", "ofertas de estudio"), (f"{r['institucion'].nunique():,}", "instituciones"),
+                  (f"{(r['gestion'] == 'Pública').mean():.0%}", "oferta pública")], claro_desde=2)
+            top_c = (r[~r["programa"].str.startswith(SIN_CARRERA)]["programa"].value_counts().head(8)
+                     .sort_values())
+            fig = go.Figure(go.Bar(x=top_c.values, y=[p.title()[:38] for p in top_c.index], orientation="h",
+                                   marker_color=AZUL, hovertemplate="%{y}: %{x} lugares<extra></extra>"))
+            fig.update_layout(title={"text": "Carreras más ofrecidas", "font": {"size": 14}}, height=330,
+                              margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
+                              font={"family": "Inter", "size": 11})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+        else:
+            top = agg.sort_values(METRICAS[metrica], ascending=True).tail(10)
+            fig = go.Figure(go.Bar(x=top[METRICAS[metrica]], y=top.index.str.title(), orientation="h",
+                                   marker_color=AZUL, hovertemplate="%{y}: %{x}<extra></extra>"))
+            fig.update_layout(title={"text": f"Top 10 regiones · {metrica.lower()}", "font": {"size": 14}},
+                              height=330, margin={"l": 10, "r": 10, "t": 40, "b": 10},
+                              plot_bgcolor="#fff", font={"family": "Inter"})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+            por_tipo = oferta.groupby("tipo")["institucion"].nunique().sort_values(ascending=False)
+            dona = go.Figure(go.Pie(labels=por_tipo.index, values=por_tipo.values, hole=.6, sort=False,
+                                    marker={"colors": ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd",
+                                                       "#bfdbfe", "#38bdf8", "#0ea5e9"]},
+                                    textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>"))
+            dona.update_layout(title={"text": "Instituciones por tipo", "font": {"size": 14}}, height=230,
+                               margin={"l": 10, "r": 10, "t": 40, "b": 10}, font={"family": "Inter", "size": 11},
+                               legend={"font": {"size": 10}})
+            st.plotly_chart(dona, width="stretch", config={"displayModeBar": False})
 
 # ============================================================
 # EXPLORAR
