@@ -37,7 +37,8 @@ Cómo cubro cada rol con agentes de IA:
 **Qué construí:** una app web con tres pasos:
 1. **Test vocacional** de 24 preguntas (modelo RIASEC de Holland, con redacción propia) y un campo libre para que el estudiante cuente con sus palabras qué le gusta.
 2. **Perfil y carreras sugeridas:** Claude interpreta los puntajes y el texto, y recomienda de 5 a 6 programas elegidos **solo de la lista oficial**. La app valida que cada programa exista en los datos.
-3. **Dónde estudiar:** un mapa y una tabla con cada institución que ofrece esa carrera en la región, con filtros de **pública o privada** y de tipo. Al final se descarga un reporte para el tutor.
+3. **Dónde estudiar:** un mapa y una tabla con cada institución que ofrece esa carrera en la región, con filtros de **pública o privada** y de tipo, y enlace a la web oficial de cada una.
+4. **Comparar:** hasta 4 instituciones lado a lado (por ejemplo, Enfermería en una universidad pública frente a Enfermería Técnica en un instituto). Muestra el título que se obtiene, la duración y el costo, y un **perfil de egreso referencial** por carrera y nivel, generado con IA y marcado como referencial. Al final se descarga un reporte para el tutor.
 
 **Insight:** el problema no es la falta de tests, sino que **los tests no muestran el mapa completo**. Un estudiante de Ayacucho con perfil Social-Investigador encuentra Enfermería Técnica en **14 lugares de su región, 10 de ellos públicos**. Ninguna universidad le va a mostrar esa opción.
 

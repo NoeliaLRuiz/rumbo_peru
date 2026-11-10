@@ -15,8 +15,10 @@ from streamlit_folium import st_folium
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
-from ai.areas import AREAS, icono_area, nombre_area  # noqa: E402
+from ai.areas import AREAS, icono_area, nombre_area, normalizar  # noqa: E402
+from ai.orientador import _nivel as nivel_de  # noqa: E402
 from ai.orientador import recomendar  # noqa: E402
+from ai.perfil_egreso import perfil_egreso  # noqa: E402
 from ai.test_vocacional import (DIMENSIONES, EJEMPLO, OPCIONES, PREGUNTAS,  # noqa: E402
                                 codigo_holland, puntajes, ranking_areas)
 
@@ -74,6 +76,17 @@ LEYENDA = (f'<div class="leyenda"><span style="background:{COLOR_GESTION["Públi
            f'<span style="background:{COLOR_GESTION["Privada"]}"></span>Privada</div>')
 
 
+PALABRAS_VACIAS = {"DE", "DEL", "LA", "EL", "LOS", "LAS", "Y", "E", "EN", "CON", "PARA", "INGENIERIA",
+                   "TECNICA", "TECNICO", "TECNICAS", "CIENCIAS", "CIENCIA", "LICENCIATURA", "PROFESIONAL"}
+
+
+def raiz_carrera(programa: str) -> str:
+    """Clave para juntar carreras equivalentes de distinto nivel:
+    'ENFERMERÍA' y 'ENFERMERIA TÉCNICA' -> 'ENFERM'; 'INGENIERÍA DE SISTEMAS' -> 'SISTEM'."""
+    palabras = [w for w in normalizar(programa).replace(",", " ").split() if w not in PALABRAS_VACIAS]
+    return palabras[0][:6] if palabras else normalizar(programa)
+
+
 @st.cache_data
 def cargar_oferta() -> pd.DataFrame:
     df = pd.read_csv(RAIZ / "data" / "oferta.csv")
@@ -84,7 +97,12 @@ def cargar_oferta() -> pd.DataFrame:
                               "CETPRO"}).fillna("")
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
+    df["raiz"] = df["programa"].map(raiz_carrera)
     return df
+
+
+def tiene_web(x) -> bool:
+    return isinstance(x, str) and x.startswith("http")
 
 
 COLUMNAS_TABLA = ["institucion", "tipo", "gestion", "programa", "departamento", "provincia", "distrito",
@@ -138,6 +156,75 @@ def ver_donde(programa: str):
     ss["prog_sel"] = programa
 
 
+@st.cache_data(show_spinner="Preparando el perfil de egreso...")
+def perfil_cacheado(programa: str, nivel: str, area_id: str) -> dict:
+    return perfil_egreso(programa, nivel, area_id)
+
+
+def comparador(prog_inicial: str, region_inicial: str, k: str):
+    """Compara lado a lado hasta 4 instituciones que ofrecen una carrera, y el perfil de egreso por nivel."""
+    programas = sorted(oferta["programa"].unique())
+    c1, c2 = st.columns([2, 1])
+    prog = c1.selectbox("Carrera a comparar", programas, index=programas.index(prog_inicial),
+                        format_func=str.title, key=f"{k}_prog")
+    regiones = ["TODAS"] + departamentos
+    region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg")
+    equivalentes = st.toggle("Incluir carreras equivalentes de otros niveles (p. ej. Enfermería y Enfermería Técnica)",
+                             value=True, key=f"{k}_eq")
+    sub = oferta[oferta["raiz"] == raiz_carrera(prog)] if equivalentes else oferta[oferta["programa"] == prog]
+    if region != "TODAS":
+        sub = sub[sub["departamento"] == region]
+    sub = sub.drop_duplicates(["institucion", "tipo", "programa", "distrito"])
+    if sub.empty:
+        st.info("No hay instituciones con esta carrera en la región elegida. Prueba con «TODAS».")
+        return
+    # Por defecto: una de cada combinación tipo × gestión (universidad pública, instituto privado, ...)
+    por_defecto = list(sub.groupby(["tipo", "gestion"], sort=False).head(1)
+                       .sort_values("tipo", key=lambda t: t != "Universidad").index)[:4]
+    elegidas = st.multiselect(
+        "Elige hasta 4 instituciones", list(sub.index), default=por_defecto, max_selections=4,
+        key=f"{k}_inst_{prog}_{region}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
+        format_func=lambda i: f"{ICONO_GESTION[sub.at[i, 'gestion']]} {sub.at[i, 'institucion']} · "
+                              f"{sub.at[i, 'programa'].title()} · {sub.at[i, 'tipo']} · "
+                              f"{sub.at[i, 'distrito'].title()}")
+    if not elegidas:
+        return
+
+    cols = st.columns(len(elegidas))
+    for col, i in zip(cols, elegidas):
+        r = sub.loc[i]
+        with col, st.container(border=True, key=f"card_cmp_{k}_{i}"):
+            st.markdown(f"#### {ICONO_GESTION[r.gestion]} {r.institucion}")
+            st.markdown(f"📘 **{r.programa.title()}**")
+            st.markdown(f"<span style='background:{COLOR_GESTION[r.gestion]};color:#fff;padding:2px 10px;"
+                        f"border-radius:999px;font-size:.8rem'>{r.gestion}</span> "
+                        f"<span style='background:{AZUL_SUAVE};color:{AZUL_OSCURO};padding:2px 10px;"
+                        f"border-radius:999px;font-size:.8rem'>{r.tipo}</span>", unsafe_allow_html=True)
+            st.markdown(f"🎓 **Al egresar obtienes:** {r.certificacion}")
+            st.markdown(f"⏱️ **Duración:** {r.duracion}")
+            st.markdown(f"💰 **Costo:** {'gratuita o de bajo costo' if r.gestion == 'Pública' else 'pensión: consultar'}")
+            st.markdown(f"📍 {r.distrito.title()}, {r.provincia.title()} ({r.departamento.title()})")
+            if tiene_web(r.web):
+                st.link_button("🌐 Ver perfil oficial en su web", r.web, width="stretch")
+            st.link_button("🔎 Buscar más información", r.buscar, width="stretch")
+
+    st.markdown("##### 🧑‍🎓 Perfil de egreso referencial")
+    # Un perfil por cada combinación carrera + nivel elegida (p. ej. Enfermería universitaria vs. técnica)
+    pares = list(dict.fromkeys((sub.at[i, "programa"], nivel_de(sub.at[i, "tipo"]), sub.at[i, "area"])
+                               for i in elegidas))
+    for n, (col, (programa, nivel, area_id)) in enumerate(zip(st.columns(len(pares)), pares)):
+        p = perfil_cacheado(programa, nivel, area_id)
+        with col, st.container(border=True, key=f"card_egreso_{k}_{n}"):
+            st.markdown(f"**{programa.title()}** · formación {nivel}")
+            st.caption(p["enfoque"])
+            st.write(p["resumen"])
+            st.markdown("**Sabrás hacer:**\n" + "\n".join(f"- {x}" for x in p["sabras_hacer"]))
+            st.markdown("**Dónde podrás trabajar:**\n" + "\n".join(f"- {x}" for x in p["donde_trabajar"]))
+    st.caption("Perfil referencial generado " + ("con IA" if p.get("fuente") == "ia" else "con plantillas")
+               + " para el nivel de formación, no para una institución en particular. "
+                 "Revisa el perfil de egreso oficial en la web de cada institución.")
+
+
 # ---------------- Encabezado ----------------
 st.markdown(f"""
 <div class="hero">
@@ -159,8 +246,8 @@ with st.sidebar:
     st.caption("No guardamos tus respuestas ni datos personales.")
     st.button("🔄 Reiniciar test", on_click=reiniciar)
 
-tab_test, tab_explorar, tab_colegios = st.tabs(["🧭 Test vocacional", "🔎 Explorar la oferta",
-                                                "🏫 Para colegios"])
+tab_test, tab_explorar, tab_comparar, tab_colegios = st.tabs(
+    ["🧭 Test vocacional", "🔎 Explorar la oferta", "⚖️ Comparar", "🏫 Para colegios"])
 
 # ================= TEST =================
 with tab_test:
@@ -223,7 +310,7 @@ with tab_test:
 
         st.markdown('<div class="nav"><a href="#perfil">1 · Tu perfil</a><a href="#areas">2 · Áreas afines</a>'
                     '<a href="#carreras">3 · Carreras</a><a href="#donde">4 · Dónde estudiar</a>'
-                    '<a href="#reporte">5 · Reporte</a></div>', unsafe_allow_html=True)
+                    '<a href="#comparar">5 · Comparar</a><a href="#reporte">6 · Reporte</a></div>', unsafe_allow_html=True)
 
         seccion(1, "Tu perfil de intereses", "Basado en el modelo RIASEC de John Holland", "perfil")
         izq, der = st.columns([1, 1])
@@ -313,7 +400,7 @@ with tab_test:
                         popup=folium.Popup(f"<b>{r.institucion}</b><br>{r.tipo} · {r.gestion}<br>"
                                            f"{r.programa.title()}<br>{r.distrito}, {r.provincia}<br>"
                                            + (f'<a href="{r.web}" target="_blank">🌐 Ir a la web</a> · '
-                                              if r.web else "")
+                                              if tiene_web(r.web) else "")
                                            + f'<a href="{r.buscar}" target="_blank">🔎 Buscar</a>',
                                            max_width=280),
                     ).add_to(grupo)
@@ -330,9 +417,13 @@ with tab_test:
                        "## Carreras sugeridas\n" + "\n".join(f"- {c['programa'].title()} ({c['nivel']})"
                                                              for c in carreras)
                        + f"\n\n## Dónde estudiar {prog.title()} ({region}, {gestion})\n"
-                       + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito} - {r.web or r.buscar}"
+                       + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito} - {r.web if tiene_web(r.web) else r.buscar}"
                                    for r in tabla.head(30).itertuples()))
-            seccion(5, "Comparte tu resultado", "Descarga el reporte y conversa con tu tutor o tu familia", "reporte")
+            seccion(5, "Compara instituciones y perfil de egreso",
+                    "Universidad, instituto o CETPRO, público o privado: ¿qué obtienes al terminar?", "comparar")
+            comparador(prog, region, "res")
+
+            seccion(6, "Comparte tu resultado", "Descarga el reporte y conversa con tu tutor o tu familia", "reporte")
             b1, b2 = st.columns(2)
             b1.download_button("📄 Descargar reporte para el tutor", reporte, file_name="reporte_rumbo.md",
                                mime="text/markdown", width="stretch")
@@ -377,6 +468,12 @@ with tab_explorar:
                           legend={"orientation": "h", "y": -0.15})
         st.plotly_chart(fig, width="stretch")
     st.dataframe(q[COLUMNAS_TABLA].head(500), hide_index=True, width="stretch", column_config=CONFIG_TABLA)
+
+# ================= COMPARAR =================
+with tab_comparar:
+    seccion("⚖️", "Compara universidades e institutos",
+            "Título que obtienes, duración, costo y perfil de egreso, lado a lado", "comparar_tab")
+    comparador("ENFERMERÍA", "TODAS", "tab")
 
 # ================= PARA COLEGIOS =================
 with tab_colegios:

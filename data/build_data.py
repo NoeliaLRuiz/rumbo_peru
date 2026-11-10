@@ -83,6 +83,9 @@ def universidades() -> pd.DataFrame:
         "lon": pd.to_numeric(u["LONGITUD_UBICACION"], errors="coerce"),
         "web": u["CODIGO_ENTIDAD"].map(webs_universidades()).fillna(""),
         "fuente": "SUNEDU",
+        "certificacion": "Grado de Bachiller y Título Profesional (Ley Universitaria 30220)",
+        "duracion": u["DENOMINACION_PROGRAMA"].map(
+            lambda p: "7 años" if normalizar(p).startswith("MEDICINA HUMANA") else "5 años aprox."),
     })
 
 
@@ -95,7 +98,7 @@ def institutos() -> pd.DataFrame:
     padron = pd.DataFrame(filas)
 
     carreras = pd.DataFrame(iter(DBF(RAW / "Carreras.dbf", encoding="cp850")))
-    carreras = carreras[["COD_MOD", "DESCRIP"]].drop_duplicates()
+    carreras = carreras[["COD_MOD", "DESCRIP", "CUADRO", "DURACION", "NHORAS"]].drop_duplicates(["COD_MOD", "DESCRIP"])
     carreras = carreras[carreras["DESCRIP"].str.strip().ne("") & carreras["DESCRIP"].ne("OTROS")]
 
     m = padron.merge(carreras, on="COD_MOD", how="left")
@@ -118,7 +121,32 @@ def institutos() -> pd.DataFrame:
         "lon": pd.to_numeric(m["NLONG_IE"], errors="coerce"),
         "web": m["PAGWEB"].fillna("").map(lambda w: webs_ok().get(limpiar(w), "")),
         "fuente": "MINEDU",
+        "certificacion": [certificacion_ies(n, c) for n, c in zip(m["NIV_MOD"], m["CUADRO"])],
+        "duracion": [duracion_ies(n, d, h) for n, d, h in zip(m["NIV_MOD"], m["DURACION"], m["NHORAS"])],
     })
+
+
+def certificacion_ies(niv_mod: str, cuadro) -> str:
+    """Qué obtiene el egresado, según el tipo de institución (Ley 30512) y el ciclo (CETPRO)."""
+    if niv_mod == "T0":
+        return "Título de Profesional Técnico o Técnico"
+    if niv_mod == "K0":
+        return "Título de Profesor (y grado de Bachiller en Educación en escuelas licenciadas)"
+    if niv_mod == "M0":
+        return "Título profesional en Arte"
+    if cuadro == "C1062":
+        return "Título de Técnico (ciclo medio)"
+    return "Certificado de Auxiliar Técnico (ciclo básico)"
+
+
+def duracion_ies(niv_mod: str, duracion, horas) -> str:
+    d = str(duracion or "").strip()
+    if niv_mod == "T0":
+        return f"{d} años" if d.isdigit() and 1 <= int(d) <= 5 else "2 a 3 años"
+    if niv_mod in ("K0", "M0"):
+        return "5 años"
+    h = int(horas or 0)
+    return f"{h:,} horas" if h > 0 else "Menos de 1 año"
 
 
 def main():
