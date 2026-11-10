@@ -143,9 +143,13 @@ def raiz_carrera(programa: str) -> str:
     return palabras[0][:6] if palabras else normalizar(programa)
 
 
+ARCHIVO_OFERTA = RAIZ / "data" / "oferta.csv"
+
+
 @st.cache_data
-def cargar_oferta() -> pd.DataFrame:
-    df = pd.read_csv(RAIZ / "data" / "oferta.csv")
+def cargar_oferta(version: float) -> pd.DataFrame:
+    """`version` = fecha de modificación del CSV: si se regeneran los datos, la caché se renueva sola."""
+    df = pd.read_csv(ARCHIVO_OFERTA)
     df["web"] = df["web"].where(df["web"].notna() & (df["web"] != ""), None)
     # Para todas las instituciones: búsqueda en Google con nombre + distrito (por si no hay web oficial)
     prefijo = df["tipo"].map({"Instituto tecnológico": "Instituto", "Instituto pedagógico": "Instituto pedagógico",
@@ -198,7 +202,7 @@ CONFIG_TABLA = {
     "buscar": st.column_config.LinkColumn("Más info", display_text="Buscar ↗"),
 }
 
-oferta = cargar_oferta()
+oferta = cargar_oferta(ARCHIVO_OFERTA.stat().st_mtime)
 GEO = cargar_geo()
 departamentos = sorted(oferta["departamento"].dropna().unique())
 programas_reales = sorted(p for p in oferta["programa"].unique() if not p.startswith(SIN_CARRERA))

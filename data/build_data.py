@@ -106,7 +106,7 @@ def institutos() -> pd.DataFrame:
     m = padron.merge(carreras, on="COD_MOD", how="left")
     # Los pedagógicos no reportan carreras en este cuadro del censo: se listan como formación docente.
     sin_carrera = m["DESCRIP"].isna()
-    m.loc[sin_carrera & m["NIV_MOD"].isin(["K0", "P0"]), "DESCRIP"] = "FORMACIÓN DOCENTE (consultar especialidades)"
+    m.loc[sin_carrera & m["NIV_MOD"].isin(["K0", "P0"]), "DESCRIP"] = "EDUCACIÓN - FORMACIÓN DOCENTE (consultar especialidades)"
     # El resto de instituciones activas que no reportó carreras en el censo (p. ej. SENATI, Cibertec):
     # se incluyen igual, para que aparezcan en el mapa y en la búsqueda por nombre.
     m["DESCRIP"] = m["DESCRIP"].fillna("OFERTA NO REPORTADA EN EL CENSO (consultar su web)")
