@@ -2,7 +2,7 @@
 
 > **Ayudamos a estudiantes de 5.º de secundaria y a sus tutores a elegir qué estudiar y dónde, mediante un test vocacional con IA que muestra todas las opciones reales cerca de casa (universidades, institutos, pedagógicos y CETPRO, públicos y privados) usando datos abiertos de SUNEDU y MINEDU.**
 
-**Demo:** `[PEGAR URL DE STREAMLIT CLOUD]` · **Video de respaldo (60–90 s):** `[PEGAR LINK]`
+**Demo:** https://rumbo-peru.streamlit.app · **Video de respaldo (60–90 s):** `[PEGAR LINK]`
 
 ---
 
@@ -26,7 +26,7 @@ Cómo cubro cada rol con agentes de IA:
 **Quién lo sufre:** los estudiantes de 5.º de secundaria de colegios públicos fuera de Lima y sus **tutores**, que orientan a decenas de alumnos cada uno con charlas y fichas en papel.
 
 **Qué les cuesta:**
-- Elegir mal significa perder años y dinero: cambiarse de carrera o dejar los estudios. `[agrega aquí un dato con fuente, por ejemplo de MINEDU, INEI o SUNEDU, o lo que te contaron en las entrevistas]`
+- Elegir mal significa perder años y dinero: cambiarse de carrera o dejar los estudios. Según el MINEDU, la **deserción universitaria fue de 12 % en 2019** y subió a **18.2 % en 2020-I** ([Infomercado](https://infomercado.pe/minedu-300-mil-universitarios-dejaron-de-estudiar-en-el-2020/)). El II Informe Bienal de SUNEDU (2020) muestra que el abandono es mayor **fuera de Lima (13.4 %)** y llega a **24.6 % en la selva** (citado en [Revista Horizontes](https://revistahorizontes.org/index.php/revistahorizontes/article/view/1719/2943)).
 - La mayoría de los tests gratuitos los hacen universidades privadas y llevan a su propia oferta. **El 81 % de la oferta pública de educación superior no es universitaria** (institutos tecnológicos, pedagógicos y CETPRO, según nuestro cálculo con datos de SUNEDU y MINEDU), y esas opciones casi nunca aparecen en esos tests.
 
 **Cómo lo resuelven hoy:** con charlas de las universidades que visitan el colegio, preguntando a familiares o con búsquedas sueltas en Google. Ponte en Carrera (MINEDU) informa sobre carreras, pero no parte de los intereses del estudiante.
@@ -48,7 +48,7 @@ Cómo cubro cada rol con agentes de IA:
 - **Despliegue gratis:** Streamlit Community Cloud permite tener una URL pública sin servidor propio.
 
 ## 6. Demo
-- **URL:** `[PEGAR URL]`
+- **URL:** https://rumbo-peru.streamlit.app
 - **Correr en local:**
   ```bash
   pip install -r requirements.txt
@@ -101,7 +101,7 @@ flowchart LR
 ## 9. Qué hizo el agente
 Construí Rumbo con **Claude Code** como co-founder técnico:
 - **Claude Code** encontró las fuentes (SUNEDU en datosabiertos.gob.pe y el Censo 2025 en ESCALE), escribió `data/build_data.py`, propuso la clasificación por palabras clave de `ai/areas.py`, el test, el orientador con salida estructurada y la app en Streamlit, y la probó de forma automática con `streamlit.testing`.
-- **Yo:** elegí el problema, hice las entrevistas, decidí el usuario y el modelo de negocio, revisé la clasificación de carreras y `[agrega lo que cambiaste tú]`.
+- **Yo:** elegí el problema, hice las entrevistas, decidí el usuario y el modelo de negocio, revisé la clasificación de carreras y dirigí cada iteración del producto: pedí la separación público/privado, el comparador y el perfil de egreso por carrera; detecté que faltaban las escuelas de la Ley 30512 (como la EESPP Monterrico) y las escuelas nacionales de arte; aporté sus webs, la dirección de la Escuela de Folklore y la fuente del pliego Educación en Transparencia MEF; revisé las preguntas del test y definí el diseño (colores, mapas, navegación por pasos).
 
 ---
 
