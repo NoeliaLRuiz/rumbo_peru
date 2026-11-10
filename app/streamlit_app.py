@@ -348,7 +348,9 @@ def calcular_resultado():
                        "rec": recomendar(punt, ranking, oferta, ss["sobre_mi"], ss["depto"])}
     ss["paso"] = N_PASOS + 1
     ss["celebrar"] = True
-    ss.pop("prog_sel", None)
+    for k in ("d_prog", "d_region", "d_gestion", "d_similares", "nav_sec"):
+        ss.pop(k, None)
+    ss["sec"] = 0
 
 
 def usar_demo():
@@ -367,8 +369,32 @@ def reiniciar():
         del ss[k]
 
 
+SECCIONES_RES = [
+    ("Tu perfil de intereses", "Basado en el modelo RIASEC de John Holland"),
+    ("Tus áreas más afines", "Qué tanto se parecen tus intereses a cada campo de estudio"),
+    ("Carreras sugeridas para ti", "Primero las que puedes estudiar en {region}"),
+    ("¿Dónde puedo estudiarlo?", "Instituciones públicas y privadas, con su web y su perfil de egreso"),
+    ("Compara instituciones y perfil de egreso", "¿Qué obtienes al terminar en cada una?"),
+    ("Comparte tu resultado", "Descarga el reporte y conversa con tu tutor o tu familia"),
+]
+ETIQUETAS_SEC = ["01 · Perfil", "02 · Áreas", "03 · Carreras", "04 · Dónde estudiar", "05 · Comparar", "06 · Reporte"]
+
+
+def ir_sec(n: int):
+    ss["sec"] = n
+    ss["nav_sec"] = ETIQUETAS_SEC[n]
+
+
+def nav_cambio():
+    if ss.get("nav_sec") in ETIQUETAS_SEC:
+        ss["sec"] = ETIQUETAS_SEC.index(ss["nav_sec"])
+    else:  # si se vuelve a hacer clic en el paso activo, se mantiene
+        ss["nav_sec"] = ETIQUETAS_SEC[ss.get("sec", 0)]
+
+
 def ver_donde(programa: str):
-    ss["prog_sel"] = programa
+    ss["d_prog"] = programa
+    ir_sec(3)
 
 
 @st.cache_data(show_spinner="Preparando el perfil de egreso...")
@@ -538,135 +564,167 @@ with tab_test:
         if faltan:
             st.caption(f"Responde las {faltan} actividades que faltan para continuar.")
 
-    # ---- Resultados ----
+    # ---- Resultados: una sección a la vez, con Anterior / Siguiente ----
     elif ss.get("resultado"):
         res = ss["resultado"]
         punt, ranking, rec, depto_est = res["punt"], res["ranking"], res["rec"], res["depto"]
         if ss.pop("celebrar", False):
             st.balloons()
             st.toast("¡Listo! Este es tu perfil 🎉")
-
-        st.markdown('<div class="nav"><a href="#perfil">01 · Tu perfil</a><a href="#areas">02 · Áreas afines</a>'
-                    '<a href="#carreras">03 · Carreras</a><a href="#donde">04 · Dónde estudiar</a>'
-                    '<a href="#comparar">05 · Comparar</a><a href="#reporte">06 · Reporte</a></div>',
-                    unsafe_allow_html=True)
-
-        # 01 Perfil
-        seccion(1, "Tu perfil de intereses", "Basado en el modelo RIASEC de John Holland", "perfil")
-        izq, der = st.columns([1, 1], gap="large")
-        with izq:
-            st.markdown(f'<div class="perfil">{codigo_holland(punt)}</div>', unsafe_allow_html=True)
-            st.write(rec["perfil"])
-            st.markdown("".join(f"<span class='pill tipo'>{f}</span>" for f in rec["fortalezas"]),
-                        unsafe_allow_html=True)
-            st.info("**Siguiente paso:** " + rec["siguiente_paso"])
-            st.caption("Recomendación generada con IA (Claude) y validada contra los datos oficiales."
-                       if rec.get("fuente") == "ia" else "Recomendación generada con reglas del modelo RIASEC.")
-        with der, st.container(border=True, key="card_radar"):
-            etiquetas = [DIMENSIONES[d][0] for d in punt] + [DIMENSIONES[next(iter(punt))][0]]
-            valores = list(punt.values()) + [next(iter(punt.values()))]
-            radar = go.Figure(go.Scatterpolar(
-                r=valores, theta=etiquetas, fill="toself", line={"color": AZUL, "width": 2.5},
-                fillcolor="rgba(56,189,248,.30)", marker={"size": 7, "color": AZUL_OSCURO},
-                hovertemplate="%{theta}: %{r:.0f}/100<extra></extra>"))
-            radar.update_layout(polar={"radialaxis": {"range": [0, 100], "showticklabels": False, "gridcolor": "#dbeafe"},
-                                       "angularaxis": {"gridcolor": "#dbeafe"}, "bgcolor": "#fff"},
-                                margin={"l": 50, "r": 50, "t": 25, "b": 25}, height=330, showlegend=False,
-                                font={"family": "Inter", "size": 13})
-            st.plotly_chart(radar, width="stretch", config={"displayModeBar": False})
-
-        # 02 Áreas
-        seccion(2, "Tus áreas más afines", "Qué tanto se parecen tus intereses a cada campo de estudio", "areas")
-        for col, (a, s) in zip(st.columns(4), ranking[:4]):
-            with col, st.container(border=True, key=f"card_area_{a}"):
-                st.markdown(f"<div style='font-size:2rem'>{icono_area(a)}</div>"
-                            f"<div style='font-weight:700;color:{AZUL_OSCURO};min-height:2.6rem'>{AREAS[a]['nombre']}</div>",
-                            unsafe_allow_html=True)
-                st.progress(min(s / 100, 1.0), text=f"Afinidad {s:.0f}/100")
-
-        # 03 Carreras
-        seccion(3, "Carreras sugeridas para ti", f"Primero las que puedes estudiar en {depto_est.title()}", "carreras")
         en_region = oferta[oferta["departamento"] == depto_est]["programa"].value_counts()
         carreras = sorted(rec["carreras"], key=lambda c: -en_region.get(c["programa"], 0))
-        cols = st.columns(3)
-        for n, c in enumerate(carreras):
-            with cols[n % 3], st.container(border=True, key=f"card_prog_{n}"):
-                lugares = int(en_region.get(c["programa"], 0))
-                st.markdown(f"<div style='font-weight:800;font-size:1.05rem;color:{AZUL_OSCURO}'>"
-                            f"{icono_area(c['area_id'])} {c['programa'].title()}</div>"
-                            f"<span class='pill tipo'>{c['nivel'].capitalize()}</span>"
-                            f"<span class='pill tipo'>{nombre_area(c['area_id'])}</span>"
-                            f"<p style='margin:8px 0;font-size:.93rem'>{c['por_que']}</p>"
-                            f"<div class='dato'><b>{lugares}</b> lugares en {depto_est.title()}</div>"
-                            if lugares else
-                            f"<div style='font-weight:800;font-size:1.05rem;color:{AZUL_OSCURO}'>"
-                            f"{icono_area(c['area_id'])} {c['programa'].title()}</div>"
-                            f"<span class='pill tipo'>{c['nivel'].capitalize()}</span>"
-                            f"<p style='margin:8px 0;font-size:.93rem'>{c['por_que']}</p>"
-                            f"<div class='dato'>No se ofrece en {depto_est.title()}: mira otras regiones</div>",
+        opciones_prog = list(dict.fromkeys(c["programa"] for c in carreras))
+        # Elecciones de "Dónde estudiar" guardadas aparte: se conservan al cambiar de sección
+        if ss.get("d_prog") not in opciones_prog:
+            ss["d_prog"] = opciones_prog[0]
+        ss.setdefault("d_region", depto_est)
+        ss.setdefault("d_gestion", "Ambas")
+        ss.setdefault("d_similares", False)
+        sec = ss.setdefault("sec", 0)
+
+        # Barra de pasos (se puede saltar a cualquier sección)
+        ss.setdefault("nav_sec", ETIQUETAS_SEC[sec])
+        st.segmented_control("Tus resultados", ETIQUETAS_SEC, key="nav_sec", required=True,
+                             on_change=nav_cambio, label_visibility="collapsed", width="stretch")
+        st.progress((sec + 1) / len(SECCIONES_RES), text=f"Sección {sec + 1} de {len(SECCIONES_RES)}")
+
+        def filtro_donde():
+            prog, region, gestion = ss["d_prog"], ss["d_region"], ss["d_gestion"]
+            area_prog = oferta.loc[oferta["programa"] == prog, "area"].iloc[0]
+            base = oferta[oferta["area"] == area_prog] if ss["d_similares"] else oferta[oferta["programa"] == prog]
+            if gestion != "Ambas":
+                base = base[base["gestion"] == gestion]
+            sel = base[base["departamento"] == region] if region != "TODAS" else base
+            return prog, region, gestion, area_prog, base, sel
+
+        titulo, subtitulo = SECCIONES_RES[sec]
+        seccion(sec + 1, titulo, subtitulo.format(region=depto_est.title()), f"res{sec}")
+
+        # 01 Perfil
+        if sec == 0:
+            izq, der = st.columns([1, 1], gap="large")
+            with izq:
+                st.markdown(f'<div class="perfil">{codigo_holland(punt)}</div>', unsafe_allow_html=True)
+                st.write(rec["perfil"])
+                st.markdown("".join(f"<span class='pill tipo'>{f}</span>" for f in rec["fortalezas"]),
                             unsafe_allow_html=True)
-                st.button("Ver dónde estudiar ↓", key=f"ver_{n}", on_click=ver_donde, args=(c["programa"],),
-                          width="stretch")
+                st.info("**Siguiente paso:** " + rec["siguiente_paso"])
+                st.caption("Recomendación generada con IA (Claude) y validada contra los datos oficiales."
+                           if rec.get("fuente") == "ia" else "Recomendación generada con reglas del modelo RIASEC.")
+            with der, st.container(border=True, key="card_radar"):
+                etiquetas = [DIMENSIONES[d][0] for d in punt] + [DIMENSIONES[next(iter(punt))][0]]
+                valores = list(punt.values()) + [next(iter(punt.values()))]
+                radar = go.Figure(go.Scatterpolar(
+                    r=valores, theta=etiquetas, fill="toself", line={"color": AZUL, "width": 2.5},
+                    fillcolor="rgba(56,189,248,.30)", marker={"size": 7, "color": AZUL_OSCURO},
+                    hovertemplate="%{theta}: %{r:.0f}/100<extra></extra>"))
+                radar.update_layout(polar={"radialaxis": {"range": [0, 100], "showticklabels": False,
+                                                          "gridcolor": "#dbeafe"},
+                                           "angularaxis": {"gridcolor": "#dbeafe"}, "bgcolor": "#fff"},
+                                    margin={"l": 50, "r": 50, "t": 25, "b": 25}, height=330, showlegend=False,
+                                    font={"family": "Inter", "size": 13})
+                st.plotly_chart(radar, width="stretch", config={"displayModeBar": False})
+
+        # 02 Áreas
+        elif sec == 1:
+            for col, (a, s_) in zip(st.columns(4), ranking[:4]):
+                with col, st.container(border=True, key=f"card_area_{a}"):
+                    st.markdown(f"<div style='font-size:2rem'>{icono_area(a)}</div>"
+                                f"<div style='font-weight:700;color:{AZUL_OSCURO};min-height:2.6rem'>"
+                                f"{AREAS[a]['nombre']}</div>", unsafe_allow_html=True)
+                    st.progress(min(s_ / 100, 1.0), text=f"Afinidad {s_:.0f}/100")
+            otras = ", ".join(AREAS[a]["nombre"] for a, _ in ranking[4:7])
+            st.caption(f"Otras áreas con algo de afinidad: {otras}.")
+
+        # 03 Carreras
+        elif sec == 2:
+            cols = st.columns(3)
+            for n, c in enumerate(carreras):
+                with cols[n % 3], st.container(border=True, key=f"card_prog_{n}"):
+                    lugares = int(en_region.get(c["programa"], 0))
+                    donde = (f"<div class='dato'><b>{lugares}</b> lugares en {depto_est.title()}</div>" if lugares
+                             else f"<div class='dato'>No se ofrece en {depto_est.title()}: mira otras regiones</div>")
+                    st.markdown(f"<div style='font-weight:800;font-size:1.05rem;color:{AZUL_OSCURO}'>"
+                                f"{icono_area(c['area_id'])} {c['programa'].title()}</div>"
+                                f"<span class='pill tipo'>{c['nivel'].capitalize()}</span>"
+                                f"<span class='pill tipo'>{nombre_area(c['area_id'])}</span>"
+                                f"<p style='margin:8px 0;font-size:.93rem'>{c['por_que']}</p>{donde}",
+                                unsafe_allow_html=True)
+                    st.button("Ver dónde estudiar →", key=f"ver_{n}", on_click=ver_donde, args=(c["programa"],),
+                              width="stretch")
 
         # 04 Dónde estudiar
-        seccion(4, "¿Dónde puedo estudiarlo?", "Instituciones públicas y privadas, con enlace a su web", "donde")
-        opciones_prog = list(dict.fromkeys(c["programa"] for c in carreras))
-        if ss.get("prog_sel") not in opciones_prog:
-            ss["prog_sel"] = opciones_prog[0]
-        f1, f2, f3, f4 = st.columns([2, 1, 1, 1])
-        prog = f1.selectbox("Carrera", opciones_prog, key="prog_sel",
-                            format_func=lambda p: f"{p.title()} ({en_region.get(p, 0)} en {depto_est.title()})")
-        region = f2.selectbox("Región", ["TODAS"] + departamentos, index=1 + departamentos.index(depto_est),
-                              format_func=str.title)
-        gestion = f3.selectbox("Gestión", ["Ambas", "Pública", "Privada"])
-        f4.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
-        area_prog = oferta.loc[oferta["programa"] == prog, "area"].iloc[0]
-        ver_similares = f4.toggle("Carreras parecidas", value=False,
-                                  help=f"Incluye otras carreras del área {nombre_area(area_prog)}")
-        base = oferta[oferta["area"] == area_prog] if ver_similares else oferta[oferta["programa"] == prog]
-        if gestion != "Ambas":
-            base = base[base["gestion"] == gestion]
-        sel = base[base["departamento"] == region] if region != "TODAS" else base
-
-        kpis([(f"{len(sel):,}", "lugares encontrados"),
-              (f"{int((sel['gestion'] == 'Pública').sum()):,}", "en instituciones públicas"),
-              (f"{int((sel['gestion'] == 'Privada').sum()):,}", "en instituciones privadas"),
-              (f"{int(sel['web'].notna().sum()):,}", "con web oficial")], claro_desde=2)
-
-        izq, der = st.columns([3, 2], gap="large")
-        with izq, st.container(border=True, key="mapa_donde"):
-            st.markdown(f"**Mapa de instituciones · {region.title()}**")
-            if sel.empty:
-                st.warning("No hay oferta con esos filtros. Prueba con «Carreras parecidas» o con otra región.")
-            else:
-                mapa_instituciones(sel, key=f"mapa_donde_{prog}_{region}_{gestion}_{ver_similares}")
-        with der, st.container(border=True, key="mapa_nacional_carrera"):
-            st.markdown(f"**¿En qué regiones se ofrece?** · {prog.title()}")
-            mapa_regiones(base, "Ofertas de estudio", key="ch_carrera", height=450)
-
-        if not sel.empty:
-            tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
-            tabla["programa"] = tabla["programa"].str.title()
-            st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56, height=300)
+        elif sec == 3:
+            f1, f2, f3, f4 = st.columns([2, 1, 1, 1])
+            ss["d_prog"] = f1.selectbox(
+                "Carrera", opciones_prog, index=opciones_prog.index(ss["d_prog"]), key="w_prog",
+                format_func=lambda p: f"{p.title()} ({en_region.get(p, 0)} en {depto_est.title()})")
+            regiones = ["TODAS"] + departamentos
+            ss["d_region"] = f2.selectbox("Región", regiones, index=regiones.index(ss["d_region"]), key="w_reg",
+                                          format_func=str.title)
+            gestiones = ["Ambas", "Pública", "Privada"]
+            ss["d_gestion"] = f3.selectbox("Gestión", gestiones, index=gestiones.index(ss["d_gestion"]),
+                                           key="w_gest")
+            f4.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
+            ss["d_similares"] = f4.toggle("Carreras parecidas", value=ss["d_similares"], key="w_sim",
+                                          help="Incluye otras carreras de la misma área")
+            prog, region, gestion, area_prog, base, sel = filtro_donde()
+            kpis([(f"{len(sel):,}", "lugares encontrados"),
+                  (f"{int((sel['gestion'] == 'Pública').sum()):,}", "en instituciones públicas"),
+                  (f"{int((sel['gestion'] == 'Privada').sum()):,}", "en instituciones privadas"),
+                  (f"{int(sel['web'].notna().sum()):,}", "con web oficial")], claro_desde=2)
+            izq, der = st.columns([3, 2], gap="large")
+            with izq, st.container(border=True, key="mapa_donde"):
+                st.markdown(f"**Mapa de instituciones · {region.title()}**")
+                if sel.empty:
+                    st.warning("No hay oferta con esos filtros. Prueba con «Carreras parecidas» o con otra región.")
+                else:
+                    mapa_instituciones(sel, key=f"mapa_donde_{prog}_{region}_{gestion}_{ss['d_similares']}")
+            with der, st.container(border=True, key="mapa_nacional_carrera"):
+                st.markdown(f"**¿En qué regiones se ofrece?** · {prog.title()}")
+                mapa_regiones(base, "Ofertas de estudio", key="ch_carrera", height=450)
+            if not sel.empty:
+                tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
+                tabla["programa"] = tabla["programa"].str.title()
+                st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56,
+                             height=320)
 
         # 05 Comparar
-        seccion(5, "Compara instituciones y perfil de egreso",
-                "Universidad, escuela superior, instituto o CETPRO, público o privado: ¿qué obtienes al terminar?",
-                "comparar")
-        comparador(prog if prog in programas_reales else programas_reales[0], region, "res")
+        elif sec == 4:
+            prog, region, *_ = filtro_donde()
+            comparador(prog if prog in programas_reales else programas_reales[0], region, "res")
 
         # 06 Reporte
-        seccion(6, "Comparte tu resultado", "Descarga el reporte y conversa con tu tutor o tu familia", "reporte")
-        tabla_rep = sel.sort_values(["gestion", "tipo", "institucion"]).head(30)
-        reporte = (f"# Reporte vocacional - Rumbo\n\nPerfil: {codigo_holland(punt)}\n\n{rec['perfil']}\n\n"
-                   "## Carreras sugeridas\n" + "\n".join(f"- {c['programa'].title()} ({c['nivel']})" for c in carreras)
-                   + f"\n\n## Dónde estudiar {prog.title()} ({region.title()}, {gestion})\n"
-                   + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito.title()} - "
-                               f"{r.web if tiene_web(r.web) else r.buscar}" for r in tabla_rep.itertuples()))
-        b1, b2 = st.columns(2)
-        b1.download_button("Descargar reporte para el tutor", reporte, file_name="reporte_rumbo.md",
-                           mime="text/markdown", width="stretch", type="primary")
-        b2.button("Hacer el test de nuevo", on_click=reiniciar, width="stretch")
+        else:
+            prog, region, gestion, _, _, sel = filtro_donde()
+            tabla_rep = sel.sort_values(["gestion", "tipo", "institucion"]).head(30)
+            reporte = (f"# Reporte vocacional - Rumbo\n\nPerfil: {codigo_holland(punt)}\n\n{rec['perfil']}\n\n"
+                       "## Carreras sugeridas\n" + "\n".join(f"- {c['programa'].title()} ({c['nivel']})"
+                                                             for c in carreras)
+                       + f"\n\n## Dónde estudiar {prog.title()} ({region.title()}, {gestion})\n"
+                       + "\n".join(f"- {r.institucion} - {r.tipo} - {r.gestion} - {r.distrito.title()} - "
+                                   f"{r.perfil_link}" for r in tabla_rep.itertuples()))
+            izq, der = st.columns([3, 2], gap="large")
+            with izq, st.container(border=True, key="card_reporte"):
+                st.markdown(f"**Tu perfil:** {codigo_holland(punt)}  \n**Carrera elegida:** {prog.title()}  \n"
+                            f"**Región:** {region.title()} · **Gestión:** {gestion}  \n"
+                            f"**Instituciones en el reporte:** {len(tabla_rep)}")
+                st.download_button("Descargar reporte para el tutor", reporte, file_name="reporte_rumbo.md",
+                                   mime="text/markdown", width="stretch", type="primary")
+            with der, st.container(border=True, key="card_reinicio"):
+                st.markdown("**¿Quieres probar de nuevo?**")
+                st.caption("Puedes repetir el test con otras respuestas o con otra región.")
+                st.button("Hacer el test de nuevo", on_click=reiniciar, width="stretch")
+
+        # Navegación inferior
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+        b1, _, b2 = st.columns([1, 2, 1])
+        if sec > 0:
+            b1.button(f"← {ETIQUETAS_SEC[sec - 1][5:]}", on_click=ir_sec, args=(sec - 1,), width="stretch",
+                      key="btn_ant")
+        if sec < len(SECCIONES_RES) - 1:
+            b2.button(f"{ETIQUETAS_SEC[sec + 1][5:]} →", on_click=ir_sec, args=(sec + 1,), width="stretch",
+                      type="primary", key="btn_sig")
     else:
         ss["paso"] = 0
         st.rerun()
