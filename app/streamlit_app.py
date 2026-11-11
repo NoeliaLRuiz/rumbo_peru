@@ -112,7 +112,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
             box-shadow: 0 4px 12px rgba(5,150,105,.12);}}
 .tip .ico img {{width: 52px; height: 52px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.18));}}
 .intro {{font-size: 1.05rem; color: #1f2937; margin: 0 0 10px; text-align: justify;}}
-.secs {{display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 10px 0 16px;}}
+.secs {{display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 10px 0 16px;}}
 .sec-card .etq {{display: inline-block; background: #94a3b8; color: #fff; font-weight: 700; font-size: .85rem;
                 padding: 3px 14px; border-radius: 6px 6px 0 0;}}
 .sec-card .cuerpo {{background: #f1f5f9; border-radius: 0 12px 12px 12px; padding: 14px; color: {AZUL};
@@ -121,7 +121,8 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .sec-card.activa .etq {{background: {AZUL};}} .sec-card.activa .cuerpo {{background: {AZUL_SUAVE};
                        border: 2px solid {AZUL};}}
 .sec-card.hecha .etq {{background: {AMBAR}; color: {AMBAR_OSCURO};}}
-.secs.pasos .cuerpo {{min-height: 70px; font-size: .9rem;}}
+.secs.pasos {{grid-template-columns: repeat(6, minmax(0, 1fr));}}
+.secs.pasos .cuerpo {{min-height: 70px; font-size: .85rem;}}
 .callout {{background: {AZUL}; color: #fff; border-radius: 14px; padding: 12px 16px; font-size: .95rem; margin-bottom: 14px;}}
 .pregunta-sec {{font-size: 1.45rem; font-weight: 800; color: {AZUL_OSCURO}; margin: 8px 0 2px;}}
 .nota {{color: {GRIS}; margin-bottom: 10px;}}

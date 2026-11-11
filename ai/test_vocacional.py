@@ -62,11 +62,14 @@ AFIRMACIONES = {
 }
 
 ORDEN = ["R", "I", "A", "S", "E", "C"]
-ICONOS_PARTE = ["🔧", "🔬", "🎨", "🤝", "🚀", "📋"]
+# Nombres de cada parte: acompañan el avance del estudiante (cada parte mezcla los 6 tipos de interés)
+NOMBRES_PARTE = ["Empecemos", "Descubre lo que te gusta", "Sigue explorando", "¡Ya vas a la mitad!",
+                 "Casi terminas", "Último paso"]
+ICONOS_PARTE = ["🚀", "🔍", "🧭", "⭐", "💪", "🏁"]
 
 # 6 partes: la parte k tiene la pregunta k de cada dimensión
 SECCIONES_TEST = [
-    (f"Parte {k + 1} · preguntas {6 * k + 1} a {6 * k + 6}", ICONOS_PARTE[k],
+    (NOMBRES_PARTE[k], ICONOS_PARTE[k],
      [(d, AFIRMACIONES[d][k], "") for d in ORDEN])
     for k in range(6)
 ]
