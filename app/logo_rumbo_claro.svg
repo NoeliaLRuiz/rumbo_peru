@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Logo de Rumbo, versión clara para fondos verdes (portada) -->
+  <path d="M32 3c-12.4 0-22.5 9.8-22.5 22C9.5 41.6 32 61 32 61s22.5-19.4 22.5-36C54.5 12.8 44.4 3 32 3z" fill="#ffffff"/>
+  <circle cx="32" cy="25" r="15.5" fill="#ecfdf5"/>
+  <polygon points="32,16.5 46,23 32,29.5 18,23" fill="#064e3b"/>
+  <path d="M23.5 26v5.5c0 2.4 3.8 4.2 8.5 4.2s8.5-1.8 8.5-4.2V26l-8.5 4z" fill="#064e3b"/>
+  <line x1="44" y1="24" x2="44" y2="31.5" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="44" cy="32.8" r="2" fill="#f59e0b"/>
+</svg>

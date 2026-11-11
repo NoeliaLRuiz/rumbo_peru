@@ -27,8 +27,12 @@ from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, OPCIONES, POR_SECC
 
 LOGO_SVG = (Path(__file__).resolve().parent / "logo_rumbo.svg").read_text(encoding="utf-8")
 LOGO_URI = "data:image/svg+xml;base64," + base64.b64encode(LOGO_SVG.encode()).decode()
+# Versión clara del logo (pin blanco) para la portada verde
+LOGO_CLARO_URI = "data:image/svg+xml;base64," + base64.b64encode(
+    (Path(__file__).resolve().parent / "logo_rumbo_claro.svg").read_bytes()).decode()
 st.set_page_config(page_title="Rumbo · Orientación vocacional",
-                   page_icon=str(Path(__file__).resolve().parent / "logo_rumbo.svg"), layout="wide")
+                   page_icon=str(Path(__file__).resolve().parent / "logo_rumbo.svg"), layout="wide",
+                   initial_sidebar_state="collapsed")
 # La página está en español: así el navegador no ofrece "traducirla" (eso cambiaba "o a la" por "oa la")
 st.html("<script>document.documentElement.lang = 'es';"
         "if (!document.querySelector('meta[name=google]')) {const m = document.createElement('meta');"
@@ -68,12 +72,12 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 /* Verde esmeralda con textura de puntos (evoca un mapa) */
 .hero {{background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
         linear-gradient(90deg, #064e3b 0%, #059669 100%); color: #fff;
-        margin: -4rem calc(50% - 50vw) 18px; padding: 6.5rem 0 34px; animation: aparecer .6s ease-out;}}
+        margin: -4rem calc(50% - 50vw) 0; padding: 6.5rem 0 34px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
-.hero .marca img {{width: 74px; height: 74px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));}}
-.hero .marca .nombre {{font-size: 3.6rem; font-weight: 800; letter-spacing: .01em; line-height: 1;}}
+.hero .marca img {{width: 118px; height: 118px; flex: 0 0 118px; max-width: none !important; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));}}
+.hero .marca .nombre {{font-size: 4.2rem; font-weight: 800; letter-spacing: .01em; line-height: 1;}}
 .hero .marca .lema {{font-size: .95rem; opacity: .9; font-weight: 500; letter-spacing: .04em; margin-top: 4px;}}
 .hero .chip {{background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); border-radius: 999px;
              padding: 4px 12px; font-size: .78rem; margin-left: 6px;}}
@@ -87,7 +91,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 
 /* Secciones */
 /* Encabezado de cada sección: tarjeta verde claro con borde a la izquierda */
-.sec {{margin: 28px 0 20px; padding: 18px 22px; scroll-margin-top: 90px; position: relative;
+.sec {{margin: 10px 0 18px; padding: 16px 22px; scroll-margin-top: 90px; position: relative;
       background: linear-gradient(90deg, {AZUL_SUAVE} 0%, #ffffff 85%); border: 1px solid #d1fae5;
       border-left: 6px solid {AZUL}; border-radius: 16px; animation: aparecer .5s ease-out;}}
 .sec .eyebrow {{color: {AZUL}; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
@@ -167,17 +171,17 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 [class*="st-key-card"]:hover {{transform: translateY(-3px); box-shadow: 0 14px 28px rgba(5,150,105,.14);
                               border-color: #6ee7b7 !important;}}
 [class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
-/* Menú principal: franja verde oscuro de borde a borde; pestaña activa en blanco con línea ámbar */
-.stTabs [data-baseweb="tab-list"] {{background: {AZUL_OSCURO}; padding: 8px 0; gap: 6px; border-bottom: none;
-    box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax);}}
-.stTabs [data-baseweb="tab"] {{font-weight: 600; color: #d1fae5; border-radius: 10px; padding: 9px 18px;
-    background: transparent;}}
-.stTabs [data-baseweb="tab"] p {{color: inherit; font-size: 1rem;}}
-.stTabs [data-baseweb="tab"]:hover {{background: rgba(255,255,255,.12); color: #ffffff;}}
-.stTabs [data-baseweb="tab"][aria-selected="true"] {{background: #ffffff; color: {AZUL_OSCURO};
+/* Menú principal (Streamlit 1.67: pestañas = [data-testid="stTab"] dentro de [role="tablist"]) */
+[data-testid="stTabs"] [role="tablist"] {{background: {AZUL_OSCURO}; padding: 10px 0; gap: 8px; border-bottom: none;
+    box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax); margin-bottom: 0;}}
+[data-testid="stTab"] {{background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.35);
+    border-radius: 10px; padding: 7px 14px; color: #ecfdf5; font-weight: 600; outline: none !important;
+    transition: background .15s, border-color .15s;}}
+[data-testid="stTab"] p {{color: inherit !important; font-size: .95rem; font-weight: 600;}}
+[data-testid="stTab"]:hover {{background: rgba(255,255,255,.22); border-color: #ffffff;}}
+[data-testid="stTab"][aria-selected="true"] {{background: #ffffff; color: {AZUL_OSCURO}; border-color: {AMBAR};
     box-shadow: inset 0 -4px 0 {AMBAR};}}
-.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] {{display: none;}}
-.stTabs [data-baseweb="tab-panel"] {{padding-top: 0;}}
+[data-testid="stTabPanel"] {{padding-top: 0 !important;}}
 .pie {{margin-top: 48px; padding: 18px 0; border-top: 1px solid #d1fae5; color: {GRIS}; font-size: .85rem;
       text-align: center;}}
 @keyframes aparecer {{from {{opacity: 0; transform: translateY(10px);}} to {{opacity: 1; transform: none;}}}}
@@ -658,7 +662,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 st.markdown(f"""
 <div class="hero"><div class="dentro">
   <div class="top">
-    <div class="marca"><img src="{LOGO_URI}" alt="Logo de Rumbo">
+    <div class="marca"><img src="{LOGO_CLARO_URI}" alt="Logo de Rumbo">
       <div><div class="nombre">Rumbo</div><div class="lema">ORIENTACIÓN VOCACIONAL · PERÚ</div></div></div>
     <div><span class="chip">Datos SUNEDU</span><span class="chip">Censo Educativo MINEDU 2025</span></div>
   </div>
