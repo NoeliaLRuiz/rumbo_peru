@@ -144,13 +144,11 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .destacadas .op {{display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d1fae5;
                  border-radius: 12px; padding: 10px;}}
 /* Menú superior: sobre el mismo verde de la portada, botones sin fondo */
-.st-key-navbar {{position: relative; isolation: isolate; margin-top: -3.2rem; padding: 4rem 0 .9rem; flex-wrap: nowrap;}}
+.st-key-navbar {{position: relative; isolation: isolate; margin-top: -3rem; padding: 3.4rem 0 .8rem; flex-wrap: nowrap;}}
 .st-key-nav_menu {{flex-wrap: nowrap;}}
 .st-key-navbar button p {{white-space: nowrap;}}
-/* La barra invisible de Streamlit (menú ⋮) no debe bloquear los clics del menú de Rumbo */
-header[data-testid="stHeader"] {{pointer-events: none;}}
-header[data-testid="stHeader"] [data-testid="stToolbar"], header[data-testid="stHeader"] button
-    {{pointer-events: auto;}}
+/* Ocultamos la barra de herramientas de Streamlit (Share, GitHub, ⋮): el menú de Rumbo queda arriba */
+header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"] {{display: none !important;}}
 .st-key-navbar::before {{content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw;
     transform: translateX(-50%); z-index: -1;
     background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
@@ -711,7 +709,9 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 # Menú superior (logo a la izquierda = ir a la portada) y portada solo en el inicio
 # ============================================================
 st.markdown(f"<style>.st-key-nav_{ss['pagina']} button {{background: rgba(255,255,255,.18) !important;"
-            f"box-shadow: inset 0 -3px 0 {AMBAR} !important;}}</style>", unsafe_allow_html=True)
+            f"box-shadow: inset 0 -3px 0 {AMBAR} !important;}}"
+            + (".st-key-nav_logo {visibility: hidden;}" if ss["pagina"] == "inicio" else "")
+            + "</style>", unsafe_allow_html=True)
 with st.container(key="navbar", horizontal=True, vertical_alignment="center", gap="small"):
     st.button("Rumbo", key="nav_logo", on_click=ir_pagina, args=("inicio",), type="tertiary",
               help="Ir a la portada")
