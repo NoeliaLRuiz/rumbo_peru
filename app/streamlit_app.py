@@ -603,8 +603,8 @@ def reiniciar():
     ss["pagina"] = "test"
 
 
-PAGINAS = [("test", "🧭 Test vocacional"), ("panorama", "🗺️ Panorama nacional"), ("explorar", "🔎 Explorar la oferta"),
-           ("comparar", "⚖️ Comparar"), ("colegios", "🏫 Para colegios")]
+PAGINAS = [("test", "Test vocacional"), ("panorama", "Panorama nacional"), ("explorar", "Explorar la oferta"),
+           ("comparar", "Comparar"), ("colegios", "Para colegios")]
 
 
 def ir_pagina(pagina: str):
