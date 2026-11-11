@@ -63,8 +63,9 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 
 /* Portada */
 /* La portada ocupa todo el ancho de la página, de borde a borde y desde arriba */
-.hero {{background: radial-gradient(circle at 85% 20%, rgba(56,189,248,.45), transparent 45%),
-        linear-gradient(125deg, {AZUL_OSCURO} 0%, {AZUL} 70%); color: #fff;
+/* Verde esmeralda con textura de puntos (evoca un mapa) */
+.hero {{background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
+        linear-gradient(90deg, #064e3b 0%, #059669 100%); color: #fff;
         margin: -4rem calc(50% - 50vw) 18px; padding: 6.5rem 0 34px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}

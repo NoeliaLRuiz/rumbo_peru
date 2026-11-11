@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <!-- Logo de Rumbo: pin de mapa (dónde estudiar) con birrete (qué estudiar) -->
-  <path d="M32 4c-12.2 0-22 9.6-22 21.6C10 41.5 32 60 32 60s22-18.5 22-34.4C54 13.6 44.2 4 32 4z" fill="#1d4ed8"
+  <path d="M32 4c-12.2 0-22 9.6-22 21.6C10 41.5 32 60 32 60s22-18.5 22-34.4C54 13.6 44.2 4 32 4z" fill="#047857"
         stroke="#ffffff" stroke-width="2"/>
   <circle cx="32" cy="25" r="15" fill="#ffffff"/>
   <polygon points="32,17 45,23 32,29 19,23" fill="#1e3a8a"/>
