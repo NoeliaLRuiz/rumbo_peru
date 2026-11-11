@@ -262,6 +262,20 @@ def sin_formacion_continua(oferta: pd.DataFrame) -> pd.DataFrame:
     return oferta[~es_continua]
 
 
+def sin_otros_programas(oferta: pd.DataFrame) -> pd.DataFrame:
+    """Quita las categorías genéricas del censo ('OTROS PROGRAMAS EN …'), que no dicen qué carrera es.
+    Si una institución solo tenía esas, queda como 'oferta no reportada' para seguir apareciendo en el mapa."""
+    es_otro = oferta["programa"].map(lambda prog: normalizar(prog).startswith("OTROS") or normalizar(prog) == "OTRO")
+    con_otra = set(oferta.loc[~es_otro, "codigo"])
+    solo_otros = es_otro & ~oferta["codigo"].isin(con_otra)
+    oferta = oferta.copy()
+    oferta.loc[solo_otros, "programa"] = "OFERTA NO REPORTADA EN EL CENSO (CONSULTAR SU WEB)"
+    oferta.loc[solo_otros, "area"] = "otros"
+    print(f"Quitados {int((es_otro & ~solo_otros).sum())} registros 'Otros programas'; "
+          f"{oferta.loc[solo_otros, 'codigo'].nunique()} instituciones quedan como 'oferta no reportada'")
+    return oferta[~(es_otro & ~solo_otros)].drop_duplicates()
+
+
 def main():
     descargar()
     oferta = pd.concat([universidades(), institutos(), instituciones_extra()], ignore_index=True)
@@ -269,6 +283,7 @@ def main():
     oferta["programa"] = oferta["programa"].str.upper()
     oferta = sin_formacion_continua(oferta)
     oferta["area"] = [clasificar(p, f) for p, f in zip(oferta["programa"], oferta["familia"])]
+    oferta = sin_otros_programas(oferta)
     # SUNEDU escribe 'JUNÍN' y MINEDU 'JUNIN': sin tildes para que coincidan entre sí y con el mapa
     for col in ["departamento", "provincia"]:
         oferta[col] = oferta[col].map(normalizar)
