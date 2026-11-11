@@ -1,15 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Logo de Rumbo: brújula con aguja ámbar (el rumbo) sobre círculo azul -->
-  <circle cx="32" cy="32" r="30" fill="#1d4ed8"/>
-  <circle cx="32" cy="32" r="24" fill="#ffffff"/>
-  <circle cx="32" cy="32" r="24" fill="none" stroke="#bfdbfe" stroke-width="2"/>
-  <g stroke="#1e3a8a" stroke-width="2" stroke-linecap="round">
-    <line x1="32" y1="10" x2="32" y2="15"/>
-    <line x1="32" y1="49" x2="32" y2="54"/>
-    <line x1="10" y1="32" x2="15" y2="32"/>
-    <line x1="49" y1="32" x2="54" y2="32"/>
-  </g>
-  <polygon points="32,14 38,32 32,29 26,32" fill="#f59e0b"/>
-  <polygon points="32,50 26,32 32,35 38,32" fill="#1e3a8a"/>
-  <circle cx="32" cy="32" r="3" fill="#ffffff" stroke="#1e3a8a" stroke-width="1.5"/>
+  <!-- Logo de Rumbo: pin de mapa (dónde estudiar) con birrete (qué estudiar) -->
+  <path d="M32 4c-12.2 0-22 9.6-22 21.6C10 41.5 32 60 32 60s22-18.5 22-34.4C54 13.6 44.2 4 32 4z" fill="#1d4ed8"
+        stroke="#ffffff" stroke-width="2"/>
+  <circle cx="32" cy="25" r="15" fill="#ffffff"/>
+  <polygon points="32,17 45,23 32,29 19,23" fill="#1e3a8a"/>
+  <path d="M24 26v5c0 2.3 3.6 4 8 4s8-1.7 8-4v-5l-8 3.7z" fill="#1e3a8a"/>
+  <line x1="43" y1="24" x2="43" y2="31" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="43" cy="32" r="1.8" fill="#f59e0b"/>
 </svg>

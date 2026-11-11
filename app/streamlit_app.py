@@ -52,13 +52,16 @@ st.markdown(f"""
 .stApp, .stApp p, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5,
 .stApp input, .stApp textarea, .stApp button {{font-family: 'Inter', sans-serif;}}
 .stApp {{background: #ffffff;}}
-.block-container {{padding-top: 1.6rem; max-width: 1280px;}}
+.block-container {{padding-top: 0; max-width: 1280px;}}
+.stApp {{overflow-x: hidden;}}
+header[data-testid="stHeader"] {{background: transparent;}}
 
 /* Portada */
+/* La portada ocupa todo el ancho de la página, de borde a borde y desde arriba */
 .hero {{background: radial-gradient(circle at 85% 20%, rgba(56,189,248,.45), transparent 45%),
-        linear-gradient(125deg, {AZUL_OSCURO} 0%, {AZUL} 70%); color: #fff; border-radius: 22px;
-        padding: 26px 34px 30px; margin-bottom: 8px; box-shadow: 0 18px 40px rgba(30,58,138,.25);
-        animation: aparecer .6s ease-out;}}
+        linear-gradient(125deg, {AZUL_OSCURO} 0%, {AZUL} 70%); color: #fff;
+        margin: 0 calc(50% - 50vw) 18px; padding: 64px 0 34px; animation: aparecer .6s ease-out;}}
+.hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
 .hero .marca img {{width: 74px; height: 74px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));}}
@@ -526,7 +529,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 # Portada
 # ============================================================
 st.markdown(f"""
-<div class="hero">
+<div class="hero"><div class="dentro">
   <div class="top">
     <div class="marca"><img src="{LOGO_URI}" alt="Logo de Rumbo">
       <div><div class="nombre">Rumbo</div><div class="lema">ORIENTACIÓN VOCACIONAL · PERÚ</div></div></div>
@@ -541,7 +544,7 @@ st.markdown(f"""
     <div class="stat"><b>{oferta['departamento'].nunique()}</b><span>regiones</span></div>
     <div class="stat"><b>{(oferta['gestion'] == 'Pública').mean():.0%}</b><span>en instituciones públicas</span></div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div></div>""", unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>"
