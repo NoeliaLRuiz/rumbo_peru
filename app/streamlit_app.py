@@ -13,6 +13,7 @@ import folium
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 from folium.plugins import Fullscreen, MarkerCluster
 from streamlit_folium import st_folium
 
@@ -522,16 +523,14 @@ def mapa_regiones(df: pd.DataFrame, metrica: str, key: str, height: int = 520, d
     return agg
 
 
-def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
-    """Mapa de puntos: una marca por sede, con sus carreras y enlaces en el popup."""
-    pts = df.dropna(subset=["lat", "lon"])
-    if pts.empty:
-        st.info("No hay coordenadas para mostrar en el mapa.")
-        return
-    sedes = (pts.groupby(["institucion", "tipo", "gestion", "distrito", "provincia", "lat", "lon"], dropna=False)
-                .agg(programas=("programa", list), perfiles=("perfil_link", list), web=("web", "first"),
-                     buscar=("buscar", "first"), logo=("logo", "first"))
-                .reset_index())
+@st.cache_data(show_spinner=False, max_entries=64)
+def html_mapa(sedes: pd.DataFrame) -> str:
+    return mapa_folium(sedes).get_root().render()
+
+
+def mapa_folium(sedes: pd.DataFrame) -> folium.Map:
+    """Arma el mapa una sola vez por combinación de filtros (queda en memoria). Los logos no van incrustados:
+    la ventana de cada punto los carga desde la web oficial solo al hacer clic (mucho más liviano)."""
     mapa = folium.Map(tiles="OpenStreetMap", control_scale=True)
     mapa.fit_bounds([[sedes["lat"].min(), sedes["lon"].min()], [sedes["lat"].max(), sedes["lon"].max()]],
                     max_zoom=13)
@@ -544,20 +543,38 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
         extra = f"<li>… y {len(carreras) - 6} más</li>" if len(carreras) > 6 else ""
         enlaces = ((f'<a href="{r.web}" target="_blank">Ir a la web ↗</a> · ' if tiene_web(r.web) else "")
                    + f'<a href="{r.buscar}" target="_blank">Buscar ↗</a>')
+        logo = (f"<img src='{r.logo_web}' loading='lazy' style='height:30px;max-width:90px;object-fit:contain;"
+                f"margin-bottom:4px'><br>" if tiene_web(r.logo_web) else "")
         folium.CircleMarker(
             [r.lat, r.lon], radius=8, color="#ffffff", weight=2, fill=True,
             fill_color=COLOR_GESTION[r.gestion], fill_opacity=0.95,
             tooltip=f"{r.institucion} · {r.gestion}",
-            popup=folium.Popup(f"<div style='font-family:Inter,sans-serif;font-size:13px'>"
-                               f"<div style='margin-bottom:4px'>{logo_html(r, 30, 90)}</div>"
+            popup=folium.Popup(f"<div style='font-family:Inter,sans-serif;font-size:13px'>{logo}"
                                f"<div style='font-weight:800;font-size:15px;color:{AZUL_OSCURO};"
                                f"line-height:1.25;margin-bottom:2px'>{r.institucion}</div>"
                                f"<span style='color:{GRIS}'>{r.tipo} · {r.gestion}<br>"
                                f"{r.distrito.title()}, {r.provincia.title()}</span>"
                                f"<ul style='padding-left:16px;margin:6px 0'>{lista}{extra}</ul>{enlaces}</div>",
-                               max_width=340),
+                               max_width=340, lazy=True),
         ).add_to(grupo)
-    st_folium(mapa, height=height, use_container_width=True, returned_objects=[], key=key)
+    return mapa
+
+
+def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
+    """Mapa de puntos: una marca por sede, con sus carreras y enlaces en la ventana de cada punto."""
+    pts = df.dropna(subset=["lat", "lon"])
+    if pts.empty:
+        st.info("No hay coordenadas para mostrar en el mapa.")
+        return
+    columnas_logo = {"logo_web": ("logo_web", "first")} if "logo_web" in pts else {}
+    sedes = (pts.groupby(["institucion", "tipo", "gestion", "distrito", "provincia", "lat", "lon"], dropna=False)
+                .agg(programas=("programa", tuple), perfiles=("perfil_link", tuple), web=("web", "first"),
+                     buscar=("buscar", "first"), **columnas_logo)
+                .reset_index())
+    if "logo_web" not in sedes:
+        sedes["logo_web"] = None
+    # El mapa se muestra como HTML estático (más rápido que el componente interactivo st_folium)
+    components.html(html_mapa(sedes), height=height)
     st.markdown(LEYENDA, unsafe_allow_html=True)
 
 
