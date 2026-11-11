@@ -72,7 +72,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 /* Verde esmeralda con textura de puntos (evoca un mapa) */
 .hero {{background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
         linear-gradient(90deg, #064e3b 0%, #059669 100%); color: #fff;
-        margin: -4rem calc(50% - 50vw) 0; padding: 6.5rem 0 34px; animation: aparecer .6s ease-out;}}
+        margin: -4rem calc(50% - 50vw) 0; padding: 6.5rem 0 22px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
@@ -172,13 +172,22 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
                               border-color: #6ee7b7 !important;}}
 [class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
 /* Menú principal (Streamlit 1.67: pestañas = [data-testid="stTab"] dentro de [role="tablist"]) */
-[data-testid="stTabs"] [role="tablist"] {{background: {AZUL_OSCURO}; padding: 10px 0; gap: 8px; border-bottom: none;
-    box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax); margin-bottom: 0;}}
+/* El menú continúa la portada: mismo degradado y puntitos, de borde a borde, sin corte visible */
+[data-testid="stTabs"] {{position: relative; isolation: isolate;}}
+[data-testid="stTabs"] [role="tablist"] {{background: transparent; padding: 4px 0 16px; gap: 8px;
+    border-bottom: none; margin-bottom: 0;}}
+[data-testid="stTabs"]::before {{content: ""; position: absolute; top: 0; height: 62px; left: 50%;
+    width: 100vw; transform: translateX(-50%); z-index: -1; pointer-events: none;
+    background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
+                linear-gradient(90deg, #064e3b 0%, #059669 100%);}}
 [data-testid="stTab"] {{background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.35);
     border-radius: 10px; padding: 7px 14px; color: #ecfdf5; font-weight: 600; outline: none !important;
     transition: background .15s, border-color .15s;}}
 [data-testid="stTab"] p {{color: inherit !important; font-size: .95rem; font-weight: 600;}}
-[data-testid="stTab"]:hover {{background: rgba(255,255,255,.22); border-color: #ffffff;}}
+[data-testid="stTab"]:hover {{background: rgba(255,255,255,.22); border-color: #ffffff; color: #ffffff;}}
+[data-testid="stTab"]:hover p {{color: #ffffff !important;}}
+[data-testid="stTab"][aria-selected="true"] p, [data-testid="stTab"][aria-selected="true"]:hover p
+    {{color: {AZUL_OSCURO} !important;}}
 [data-testid="stTab"][aria-selected="true"] {{background: #ffffff; color: {AZUL_OSCURO}; border-color: {AMBAR};
     box-shadow: inset 0 -4px 0 {AMBAR};}}
 [data-testid="stTabPanel"] {{padding-top: 0 !important;}}
