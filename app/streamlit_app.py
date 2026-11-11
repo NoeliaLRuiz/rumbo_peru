@@ -77,7 +77,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 /* Verde esmeralda con textura de puntos (evoca un mapa) */
 .hero {{background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
         linear-gradient(90deg, #064e3b 0%, #059669 100%); color: #fff;
-        margin: -4rem calc(50% - 50vw) 0; padding: 6.5rem 0 22px; animation: aparecer .6s ease-out;}}
+        margin: -1rem calc(50% - 50vw) 0; padding: 1.2rem 0 34px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
@@ -143,6 +143,29 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .destacadas .lista {{display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;}}
 .destacadas .op {{display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d1fae5;
                  border-radius: 12px; padding: 10px;}}
+/* Menú superior: sobre el mismo verde de la portada, botones sin fondo */
+.st-key-navbar {{position: relative; isolation: isolate; margin-top: -3.2rem; padding: 4rem 0 .9rem; flex-wrap: nowrap;}}
+.st-key-nav_menu {{flex-wrap: nowrap;}}
+.st-key-navbar button p {{white-space: nowrap;}}
+/* La barra invisible de Streamlit (menú ⋮) no debe bloquear los clics del menú de Rumbo */
+header[data-testid="stHeader"] {{pointer-events: none;}}
+header[data-testid="stHeader"] [data-testid="stToolbar"], header[data-testid="stHeader"] button
+    {{pointer-events: auto;}}
+.st-key-navbar::before {{content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw;
+    transform: translateX(-50%); z-index: -1;
+    background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
+                linear-gradient(90deg, #064e3b 0%, #059669 100%);}}
+.st-key-navbar button {{background: transparent !important; border: none !important; color: #ecfdf5 !important;
+    box-shadow: none !important; padding: 6px 10px !important; border-radius: 10px !important;}}
+.st-key-navbar button p {{color: #ecfdf5 !important; font-weight: 600; font-size: .98rem;}}
+.st-key-navbar button:hover {{background: rgba(255,255,255,.14) !important;}}
+.st-key-navbar button:hover p {{color: #ffffff !important;}}
+.st-key-nav_logo button {{padding-left: 58px !important; min-height: 50px;
+    background: url("{LOGO_CLARO_URI}") no-repeat 4px center / 46px 46px !important;}}
+.st-key-nav_logo button p {{font-size: 1.7rem !important; font-weight: 800 !important; color: #ffffff !important;}}
+.st-key-nav_logo button:hover {{background-color: transparent !important; opacity: .9;}}
+.inicio-tit {{font-size: 1.4rem; font-weight: 800; color: {AZUL_OSCURO}; margin: 26px 0 10px;}}
+[data-testid="stSidebarCollapsedControl"], section[data-testid="stSidebar"] {{display: none;}}
 .inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
@@ -492,6 +515,7 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
 # ============================================================
 # Las respuestas se guardan aparte de los widgets: así no se pierden al pasar de un paso a otro.
 ss = st.session_state
+ss.setdefault("pagina", "inicio")
 ss.setdefault("paso", 0)
 ss.setdefault("resp", [None] * len(PREGUNTAS))
 ss.setdefault("depto", "LIMA")
@@ -522,8 +546,18 @@ def ir_a(paso: int):
 
 
 def reiniciar():
+    """Borra las respuestas y vuelve al inicio del test (sin salir de la sección del test)."""
     for k in list(ss.keys()):
         del ss[k]
+    ss["pagina"] = "test"
+
+
+PAGINAS = [("test", "🧭 Test vocacional"), ("panorama", "🗺️ Panorama nacional"), ("explorar", "🔎 Explorar la oferta"),
+           ("comparar", "⚖️ Comparar"), ("colegios", "🏫 Para colegios")]
+
+
+def ir_pagina(pagina: str):
+    ss["pagina"] = pagina
 
 
 SECCIONES_RES = [
@@ -674,41 +708,52 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 
 
 # ============================================================
-# Portada
+# Menú superior (logo a la izquierda = ir a la portada) y portada solo en el inicio
 # ============================================================
-st.markdown(f"""
-<div class="hero"><div class="dentro">
-  <div class="top">
-    <div class="marca"><img src="{LOGO_CLARO_URI}" alt="Logo de Rumbo">
-      <div><div class="nombre">Rumbo</div><div class="lema">ORIENTACIÓN VOCACIONAL · PERÚ</div></div></div>
-    <div><span class="chip">Datos SUNEDU</span><span class="chip">Censo Educativo MINEDU 2025</span></div>
-  </div>
-  <h1>Encuentra qué estudiar y dónde, cerca de casa</h1>
-  <p class="sub">Test vocacional gratuito que te muestra todas tus opciones reales en el Perú: universidades,
-     institutos, escuelas superiores, pedagógicos y CETPRO, públicos y privados.</p>
-  <div class="stats">
-    <div class="stat"><b>{len(oferta):,}</b><span>ofertas de estudio</span></div>
-    <div class="stat"><b>{oferta['institucion'].nunique():,}</b><span>instituciones</span></div>
-    <div class="stat"><b>{oferta['departamento'].nunique()}</b><span>regiones</span></div>
-    <div class="stat"><b>{(oferta['gestion'] == 'Pública').mean():.0%}</b><span>en instituciones públicas</span></div>
-  </div>
-</div></div>""", unsafe_allow_html=True)
+st.markdown(f"<style>.st-key-nav_{ss['pagina']} button {{background: rgba(255,255,255,.18) !important;"
+            f"box-shadow: inset 0 -3px 0 {AMBAR} !important;}}</style>", unsafe_allow_html=True)
+with st.container(key="navbar", horizontal=True, vertical_alignment="center", gap="small"):
+    st.button("Rumbo", key="nav_logo", on_click=ir_pagina, args=("inicio",), type="tertiary",
+              help="Ir a la portada")
+    with st.container(horizontal=True, horizontal_alignment="right", vertical_alignment="center",
+                      gap="small", key="nav_menu"):
+        for clave, texto in PAGINAS:
+            st.button(texto, key=f"nav_{clave}", on_click=ir_pagina, args=(clave,), type="tertiary")
 
-with st.sidebar:
-    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>"
-                f"<img src='{LOGO_URI}' width='44'><span style='font-size:1.9rem;font-weight:800;"
-                f"color:{AZUL_OSCURO}'>Rumbo</span></div>", unsafe_allow_html=True)
-    st.write("Orientación vocacional con datos abiertos de **SUNEDU** y del **Censo Educativo 2025 del MINEDU**.")
-    st.caption("No guardamos tus respuestas ni datos personales.")
-    st.button("Reiniciar test", on_click=reiniciar, width="stretch")
-
-tab_test, tab_panorama, tab_explorar, tab_comparar, tab_colegios = st.tabs(
-    ["🧭  Test vocacional", "🗺️  Panorama nacional", "🔎  Explorar la oferta", "⚖️  Comparar", "🏫  Para colegios"], key="menu_principal")
+if ss["pagina"] == "inicio":
+    st.markdown(f"""
+    <div class="hero"><div class="dentro">
+      <div class="top">
+        <div class="marca"><img src="{LOGO_CLARO_URI}" alt="Logo de Rumbo">
+          <div><div class="nombre">Rumbo</div><div class="lema">ORIENTACIÓN VOCACIONAL · PERÚ</div></div></div>
+        <div><span class="chip">Datos SUNEDU</span><span class="chip">Censo Educativo MINEDU 2025</span></div>
+      </div>
+      <h1>Encuentra qué estudiar y dónde, cerca de casa</h1>
+      <p class="sub">Test vocacional gratuito que te muestra todas tus opciones reales en el Perú: universidades,
+         institutos, escuelas superiores, pedagógicos y CETPRO, públicos y privados.</p>
+      <div class="stats">
+        <div class="stat"><b>{len(oferta):,}</b><span>ofertas de estudio</span></div>
+        <div class="stat"><b>{oferta['institucion'].nunique():,}</b><span>instituciones</span></div>
+        <div class="stat"><b>{oferta['departamento'].nunique()}</b><span>regiones</span></div>
+        <div class="stat"><b>{(oferta['gestion'] == 'Pública').mean():.0%}</b><span>en instituciones públicas</span></div>
+      </div>
+    </div></div>""", unsafe_allow_html=True)
+    st.markdown("<div class='inicio-tit'>¿Qué quieres hacer?</div>", unsafe_allow_html=True)
+    accesos = [("test", "🧭", "Hacer el test vocacional", "Descubre tu perfil y las carreras que van contigo."),
+               ("panorama", "🗺️", "Ver el panorama nacional", "La oferta de educación superior, región por región."),
+               ("explorar", "🔎", "Explorar la oferta", "Busca por sector y carrera, y mira dónde estudiar."),
+               ("comparar", "⚖️", "Comparar instituciones", "Título, duración, prestigio y perfil de egreso.")]
+    for col, (clave, ico, tit, txt) in zip(st.columns(4), accesos):
+        with col, st.container(border=True, key=f"card_inicio_{clave}"):
+            st.markdown(f"<div style='font-size:2rem'>{ico}</div><div style='font-weight:800;color:{AZUL_OSCURO};"
+                        f"font-size:1.05rem'>{tit}</div><div style='color:{GRIS};font-size:.9rem;min-height:2.6rem'>"
+                        f"{txt}</div>", unsafe_allow_html=True)
+            st.button("Ir →", key=f"ir_{clave}", on_click=ir_pagina, args=(clave,), type="primary", width="stretch")
 
 # ============================================================
 # TEST
 # ============================================================
-with tab_test:
+if ss["pagina"] == "test":
     paso = ss["paso"]
 
     # ---- Paso 0: portada del test ----
@@ -964,7 +1009,7 @@ with tab_test:
 # ============================================================
 # PANORAMA NACIONAL
 # ============================================================
-with tab_panorama:
+if ss["pagina"] == "panorama":
     seccion("Panorama nacional", "La educación superior en el Perú, región por región",
             "Elige qué medir, enfoca una región y usa el zoom del mapa", "panorama")
     izq, der = st.columns([3, 2], gap="large")
@@ -1026,7 +1071,7 @@ with tab_panorama:
 # ============================================================
 # EXPLORAR
 # ============================================================
-with tab_explorar:
+if ss["pagina"] == "explorar":
     seccion("Explorar", "Toda la oferta de educación superior del Perú",
             "Busca una carrera o una institución y mira dónde está, con su web y su perfil de egreso", "explorar")
     # Primero el sector, luego la carrera; la institución es un filtro aparte y opcional
@@ -1079,7 +1124,7 @@ with tab_explorar:
 # ============================================================
 # COMPARAR
 # ============================================================
-with tab_comparar:
+if ss["pagina"] == "comparar":
     seccion("Comparar", "Compara universidades, escuelas e institutos",
             "Título que obtienes, duración, costo, ubicación y perfil de egreso, lado a lado", "comparar_tab")
     comparador("ENFERMERÍA", "TODAS", "tab")
@@ -1087,7 +1132,7 @@ with tab_comparar:
 # ============================================================
 # PARA COLEGIOS
 # ============================================================
-with tab_colegios:
+if ss["pagina"] == "colegios":
     seccion(1, "Cómo funciona", "De la duda a un plan concreto en una clase de tutoría", "como")
     pasos = [("🧭", "El estudiante hace el test", "36 preguntas en 6 partes, desde el celular o la sala de cómputo."),
              ("🤖", "La IA interpreta su perfil", "Explica sus intereses y sugiere carreras reales del Perú."),
