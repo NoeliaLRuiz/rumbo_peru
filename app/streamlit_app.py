@@ -628,14 +628,52 @@ def elegir_sector_y_carrera(k: str, prog_inicial: str | None = None, permitir_to
     return sector, (None if carrera == "TODAS" else carrera)
 
 
-def comparador(prog_inicial: str, region_inicial: str, k: str):
-    """Compara lado a lado hasta 4 instituciones que ofrecen una carrera, y el perfil de egreso por nivel."""
-    _, prog = elegir_sector_y_carrera(k, prog_inicial)
+def elegir_por_defecto(sub: pd.DataFrame, prog: str) -> list:
+    """Una universidad pública, una universidad privada, un instituto y una escuela.
+    En cada grupo se prefiere la que ofrece exactamente la carrera elegida y, luego, la de mayor prestigio
+    (`sub` ya viene ordenado). Si falta algún tipo, se completa buscando variedad de tipo y gestión."""
+    sub = sub.assign(_exacta=sub["programa"] != prog).sort_values("_exacta", kind="stable")
+    grupos = [(sub["tipo"] == "Universidad") & (sub["gestion"] == "Pública"),
+              (sub["tipo"] == "Universidad") & (sub["gestion"] == "Privada"),
+              sub["tipo"].str.startswith("Instituto"),
+              sub["tipo"].str.startswith("Escuela")]
+    elegidas = []
+    usada = lambda i: sub.at[i, "institucion"] in {sub.at[j, "institucion"] for j in elegidas}
+    for g in grupos:
+        candidatas = [i for i in sub[g].index if not usada(i)]
+        if candidatas:
+            elegidas.append(candidatas[0])
+    # Completar hasta 4: primero combinaciones tipo × gestión que aún no aparecen, luego cualquiera
+    vistas = {(sub.at[i, "tipo"], sub.at[i, "gestion"]) for i in elegidas}
+    for solo_nuevas in (True, False):
+        for i in sub.index:
+            if len(elegidas) >= 4:
+                break
+            combo = (sub.at[i, "tipo"], sub.at[i, "gestion"])
+            if i not in elegidas and not usada(i) and (combo not in vistas or not solo_nuevas):
+                elegidas.append(i); vistas.add(combo)
+    return elegidas[:4]
+
+
+def comparador(prog_inicial: str, region_inicial: str, k: str, carreras: list | None = None,
+               gestion_inicial: str = "Ambas"):
+    """Compara lado a lado hasta 4 instituciones que ofrecen una carrera, y el perfil de egreso por nivel.
+    Con `carreras` (resultados del test) solo se eligen las carreras sugeridas, las mismas de «Dónde estudiar»."""
+    if carreras:
+        def sincronizar():  # la carrera elegida aquí también se usa en «Dónde estudiar»
+            ss["d_prog"] = ss[f"{k}_carrera_sugerida"]
+        prog = st.selectbox("Carrera (de tus carreras sugeridas)", carreras, index=carreras.index(prog_inicial),
+                            key=f"{k}_carrera_sugerida", format_func=str.title, on_change=sincronizar,
+                            placeholder="Elige una opción")
+    else:
+        _, prog = elegir_sector_y_carrera(k, prog_inicial)
     c2, c4, c3 = st.columns([1, 1, 1])
     regiones = ["TODAS"] + departamentos
     region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg",
                           format_func=str.title, placeholder="Elige una opción")
-    gestion = c4.selectbox("Gestión", ["Ambas", "Pública", "Privada"], key=f"{k}_gest", placeholder="Elige una opción")
+    gestiones = ["Ambas", "Pública", "Privada"]
+    gestion = c4.selectbox("Gestión", gestiones, index=gestiones.index(gestion_inicial), key=f"{k}_gest",
+                           placeholder="Elige una opción")
     c3.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
     equivalentes = c3.toggle("Incluir carreras equivalentes", value=True, key=f"{k}_eq",
                              help="Junta, por ejemplo, Enfermería (universidad) y Enfermería Técnica (instituto)")
@@ -649,8 +687,8 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     if sub.empty:
         st.info("No hay instituciones con esta carrera y filtros. Prueba con otra región o con «Ambas».")
         return
-    # Por defecto: una de cada combinación tipo × gestión (universidad pública, instituto privado, ...)
-    por_defecto = list(sub.groupby(["tipo", "gestion"], sort=False).head(1).index)[:4]
+    # Por defecto: universidad pública, universidad privada, instituto y escuela
+    por_defecto = elegir_por_defecto(sub, prog)
     elegidas = st.multiselect(
         "Instituciones a comparar (hasta 4)", list(sub.index), default=por_defecto, max_selections=4,
         key=f"{k}_inst_{prog}_{region}_{gestion}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
@@ -974,8 +1012,8 @@ if ss["pagina"] == "test":
 
         # 05 Comparar
         elif sec == 4:
-            prog, region, *_ = filtro_donde()
-            comparador(prog if prog in programas_reales else programas_reales[0], region, "res")
+            prog, region, gestion, *_ = filtro_donde()
+            comparador(prog, region, "res", carreras=opciones_prog, gestion_inicial=gestion)
 
         # 06 Reporte
         else:
