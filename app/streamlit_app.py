@@ -57,6 +57,7 @@ st.markdown(f"""
 .stApp {{overflow-x: hidden;}}
 header[data-testid="stHeader"] {{background: transparent;}}
 [data-testid="stDecoration"] {{display: none;}}
+[data-testid="InputInstructions"] {{display: none;}}  /* oculta "Press Enter to apply" (en inglés) */
 [data-testid="stAppViewContainer"] > .main, [data-testid="stMain"] {{padding-top: 0 !important;}}
 [data-testid="stMainBlockContainer"], .block-container {{padding-top: 0 !important;}}
 header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[data-testid="stHeader"] span
@@ -573,7 +574,7 @@ def elegir_sector_y_carrera(k: str, prog_inicial: str | None = None, permitir_to
         f"2 · Elige la carrera ({len(conteo)} carreras en {nombre_area(sector)})", opciones, index=indice,
         key=f"{k}_carrera_{sector}",
         format_func=lambda p: "Todas las carreras del sector" if p == "TODAS"
-        else f"{p.title()} · {conteo[p]:,} lugar{'es' if conteo[p] != 1 else ''}")
+        else f"{p.title()} · {conteo[p]:,} lugar{'es' if conteo[p] != 1 else ''}", placeholder="Elige una opción")
     return sector, (None if carrera == "TODAS" else carrera)
 
 
@@ -583,8 +584,8 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     c2, c4, c3 = st.columns([1, 1, 1])
     regiones = ["TODAS"] + departamentos
     region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg",
-                          format_func=str.title)
-    gestion = c4.selectbox("Gestión", ["Ambas", "Pública", "Privada"], key=f"{k}_gest")
+                          format_func=str.title, placeholder="Elige una opción")
+    gestion = c4.selectbox("Gestión", ["Ambas", "Pública", "Privada"], key=f"{k}_gest", placeholder="Elige una opción")
     c3.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
     equivalentes = c3.toggle("Incluir carreras equivalentes", value=True, key=f"{k}_eq",
                              help="Junta, por ejemplo, Enfermería (universidad) y Enfermería Técnica (instituto)")
@@ -604,7 +605,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
         "Instituciones a comparar (hasta 4)", list(sub.index), default=por_defecto, max_selections=4,
         key=f"{k}_inst_{prog}_{region}_{gestion}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
         format_func=lambda i: f"{sub.at[i, 'institucion']} · {sub.at[i, 'programa'].title()} · "
-                              f"{sub.at[i, 'tipo']} · {sub.at[i, 'gestion']} · {sub.at[i, 'distrito'].title()}")
+                              f"{sub.at[i, 'tipo']} · {sub.at[i, 'gestion']} · {sub.at[i, 'distrito'].title()}", placeholder="Elige una o más opciones")
     if not elegidas:
         return
 
@@ -725,7 +726,7 @@ with tab_test:
             with st.container(border=True, key="card_inicio"):
                 c1, c2 = st.columns([1, 2])
                 ss["depto"] = c1.selectbox("¿En qué región vives?", departamentos,
-                                           index=departamentos.index(ss["depto"]), format_func=str.title)
+                                           index=departamentos.index(ss["depto"]), format_func=str.title, placeholder="Elige una opción")
                 ss["sobre_mi"] = c2.text_input("Cuéntanos qué te gusta hacer (opcional)", value=ss["sobre_mi"],
                                                max_chars=600, placeholder="Ej.: me gusta ayudar a mis compañeros…")
                 b1, b2 = st.columns(2)
@@ -861,13 +862,13 @@ with tab_test:
             f1, f2, f3, f4 = st.columns([2, 1, 1, 1])
             ss["d_prog"] = f1.selectbox(
                 "Carrera", opciones_prog, index=opciones_prog.index(ss["d_prog"]), key="w_prog",
-                format_func=lambda p: f"{p.title()} ({en_region.get(p, 0)} en {depto_est.title()})")
+                format_func=lambda p: f"{p.title()} ({en_region.get(p, 0)} en {depto_est.title()})", placeholder="Elige una opción")
             regiones = ["TODAS"] + departamentos
             ss["d_region"] = f2.selectbox("Región", regiones, index=regiones.index(ss["d_region"]), key="w_reg",
-                                          format_func=str.title)
+                                          format_func=str.title, placeholder="Elige una opción")
             gestiones = ["Ambas", "Pública", "Privada"]
             ss["d_gestion"] = f3.selectbox("Gestión", gestiones, index=gestiones.index(ss["d_gestion"]),
-                                           key="w_gest")
+                                           key="w_gest", placeholder="Elige una opción")
             f4.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
             ss["d_similares"] = f4.toggle("Carreras parecidas", value=ss["d_similares"], key="w_sim",
                                           help="Incluye otras carreras de la misma área")
@@ -961,7 +962,7 @@ with tab_panorama:
             metrica = st.segmented_control("Ver en el mapa", list(METRICAS), default="Ofertas de estudio",
                                            key="met_panorama") or "Ofertas de estudio"
         enfoque = m2.selectbox("Enfocar una región", ["TODO EL PERÚ"] + departamentos, key="enfoque",
-                               format_func=str.title)
+                               format_func=str.title, placeholder="Elige una opción")
         destacar = None if enfoque == "TODO EL PERÚ" else enfoque
         agg = mapa_regiones(oferta, metrica, key="ch_panorama", height=520, destacar=destacar)
     with der:
@@ -1021,9 +1022,9 @@ with tab_explorar:
     texto = carrera_e or sector_e or ""
     texto_inst = st.text_input("Institución (opcional)", placeholder="San Marcos, SENATI, Monterrico...")
     e3, e4, e5 = st.columns([1, 1, 2])
-    region_e = e3.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title)
-    gestion_e = e4.selectbox("Gestión ", ["Ambas", "Pública", "Privada"])
-    tipos = e5.multiselect("Tipo de institución", sorted(oferta["tipo"].unique()))
+    region_e = e3.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title, placeholder="Elige una opción")
+    gestion_e = e4.selectbox("Gestión ", ["Ambas", "Pública", "Privada"], placeholder="Elige una opción")
+    tipos = e5.multiselect("Tipo de institución", sorted(oferta["tipo"].unique()), placeholder="Todos los tipos (elige uno o más)")
     q = oferta
     sin_t = str.maketrans("ÁÉÍÓÚ", "AEIOU")
     if sector_e:
