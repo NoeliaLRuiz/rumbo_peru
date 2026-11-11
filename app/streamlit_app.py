@@ -86,13 +86,12 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .hero .stat span {{font-size: .82rem; opacity: .9;}}
 
 /* Secciones */
-/* Cada sección empieza con una franja propia, bien separada de la anterior */
-.sec {{margin: 6px 0 16px; padding: 12px 0; scroll-margin-top: 90px; position: relative; isolation: isolate;
-      animation: aparecer .5s ease-out;}}
-.sec::before {{content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
-              background: #fffbeb; border-top: 3px solid {AMBAR}; border-bottom: 1px solid #fde68a; z-index: -1;}}
-.sec .eyebrow {{color: #b45309; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
-.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.5rem; margin: 0; padding: 0;}}
+/* Encabezado de cada sección: tarjeta verde claro con borde a la izquierda */
+.sec {{margin: 28px 0 20px; padding: 18px 22px; scroll-margin-top: 90px; position: relative;
+      background: linear-gradient(90deg, {AZUL_SUAVE} 0%, #ffffff 85%); border: 1px solid #d1fae5;
+      border-left: 6px solid {AZUL}; border-radius: 16px; animation: aparecer .5s ease-out;}}
+.sec .eyebrow {{color: {AZUL}; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
+.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
 /* Portada del test: franja de título, consejos y tarjetas de secciones */
 .banda {{background: linear-gradient(90deg, {AZUL_OSCURO}, {AZUL}); color: #fff; text-align: center;
