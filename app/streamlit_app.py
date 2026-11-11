@@ -195,6 +195,11 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     df["perfil_link"] = [enlace_perfil(n, p, w) for n, p, w in zip(df["institucion"], df["programa"], df["web"])]
     logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)
     df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), logos_web)]
+    # Miniatura cuadrada con el logo completo (data/miniaturas_logos.py): así no se corta en tablas ni tarjetas
+    archivo_mini = RAIZ / "data" / "logos_mini.csv"
+    if archivo_mini.exists():
+        mini = pd.read_csv(archivo_mini, dtype=str).set_index("codigo")["logo_mini"]
+        df["logo"] = df["codigo"].map(mini).fillna(df["logo"])
     return df
 
 
