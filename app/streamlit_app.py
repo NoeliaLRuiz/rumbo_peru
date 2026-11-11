@@ -540,11 +540,39 @@ def perfil_cacheado(programa: str, nivel: str, area_id: str) -> dict:
 # ============================================================
 # Comparador
 # ============================================================
+@st.cache_data
+def carreras_por_sector(version: float) -> dict:
+    """Para cada sector (área), sus carreras ordenadas por cuántos lugares las ofrecen."""
+    reales = oferta[~oferta["programa"].str.startswith(SIN_CARRERA)]
+    return {a: reales[reales["area"] == a]["programa"].value_counts().to_dict() for a in AREAS}
+
+
+def elegir_sector_y_carrera(k: str, prog_inicial: str | None = None, permitir_todas: bool = False):
+    """Paso 1: el sector (Salud, Educación, …). Paso 2: la carrera dentro de ese sector."""
+    por_sector = carreras_por_sector(ARCHIVO_OFERTA.stat().st_mtime)
+    sector_inicial = oferta.loc[oferta["programa"] == prog_inicial, "area"].iloc[0] if prog_inicial else None
+    sector = st.pills("1 · Elige un sector", list(AREAS), key=f"{k}_sector",
+                      default=sector_inicial if sector_inicial in AREAS else None,
+                      format_func=lambda a: f"{icono_area(a)} {nombre_area(a)}",
+                      required=not permitir_todas)
+    if not sector:
+        st.caption("Elige un sector para ver sus carreras (o deja todos para explorar toda la oferta).")
+        return None, None
+    conteo = por_sector[sector]
+    opciones = (["TODAS"] if permitir_todas else []) + list(conteo)
+    indice = opciones.index(prog_inicial) if prog_inicial in opciones else 0
+    carrera = st.selectbox(
+        f"2 · Elige la carrera ({len(conteo)} carreras en {nombre_area(sector)})", opciones, index=indice,
+        key=f"{k}_carrera_{sector}",
+        format_func=lambda p: "Todas las carreras del sector" if p == "TODAS"
+        else f"{p.title()} · {conteo[p]:,} lugar{'es' if conteo[p] != 1 else ''}")
+    return sector, (None if carrera == "TODAS" else carrera)
+
+
 def comparador(prog_inicial: str, region_inicial: str, k: str):
     """Compara lado a lado hasta 4 instituciones que ofrecen una carrera, y el perfil de egreso por nivel."""
-    c1, c2, c4, c3 = st.columns([2, 1, 1, 1])
-    prog = c1.selectbox("Carrera a comparar", programas_reales, index=programas_reales.index(prog_inicial),
-                        format_func=str.title, key=f"{k}_prog")
+    _, prog = elegir_sector_y_carrera(k, prog_inicial)
+    c2, c4, c3 = st.columns([1, 1, 1])
     regiones = ["TODAS"] + departamentos
     region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg",
                           format_func=str.title)
@@ -980,19 +1008,20 @@ with tab_panorama:
 with tab_explorar:
     seccion("Explorar", "Toda la oferta de educación superior del Perú",
             "Busca una carrera o una institución y mira dónde está, con su web y su perfil de egreso", "explorar")
-    # Dos filtros separados: la carrera solo busca en carreras y la institución solo en instituciones
-    e1, e2 = st.columns(2)
-    texto = e1.text_input("Carrera", placeholder="enfermería, contabilidad, diseño, educación...")
-    texto_inst = e2.text_input("Institución (opcional)", placeholder="San Marcos, SENATI, Monterrico...")
+    # Primero el sector, luego la carrera; la institución es un filtro aparte y opcional
+    sector_e, carrera_e = elegir_sector_y_carrera("exp", permitir_todas=True)
+    texto = carrera_e or sector_e or ""
+    texto_inst = st.text_input("Institución (opcional)", placeholder="San Marcos, SENATI, Monterrico...")
     e3, e4, e5 = st.columns([1, 1, 2])
     region_e = e3.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title)
     gestion_e = e4.selectbox("Gestión ", ["Ambas", "Pública", "Privada"])
     tipos = e5.multiselect("Tipo de institución", sorted(oferta["tipo"].unique()))
     q = oferta
     sin_t = str.maketrans("ÁÉÍÓÚ", "AEIOU")
-    if texto:
-        buscado = texto.upper().translate(sin_t)
-        q = q[q["programa"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
+    if sector_e:
+        q = q[q["area"] == sector_e]
+    if carrera_e:
+        q = q[q["programa"] == carrera_e]
     if texto_inst:
         buscado = texto_inst.upper().translate(sin_t)
         q = q[q["institucion"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
