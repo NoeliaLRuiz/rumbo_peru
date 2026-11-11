@@ -226,9 +226,31 @@ def duracion_ies(niv_mod: str, duracion, horas) -> str:
     return f"{h:,} horas" if h > 0 else "Menos de 1 año"
 
 
+def programas_manuales(oferta: pd.DataFrame) -> pd.DataFrame:
+    """Reemplaza la oferta de una institución por sus programas verificados a mano
+    (data/programas_manuales.csv). Sirve para escuelas cuyo censo no reporta especialidades,
+    como la EESPP Monterrico: se copian los datos de la institución y se crea una fila por programa."""
+    archivo = RAIZ / "data" / "programas_manuales.csv"
+    if not archivo.exists():
+        return oferta
+    manual = pd.read_csv(archivo, dtype=str)
+    nuevas = []
+    for codigo, grupo in manual.groupby("codigo"):
+        base = oferta[oferta["codigo"] == codigo]
+        if base.empty:
+            print(f"Aviso: {codigo} no está en la oferta; se omite")
+            continue
+        fila = base.iloc[0]
+        for programa in grupo["programa"]:
+            nuevas.append({**fila.to_dict(), "programa": programa.upper(), "familia": ""})
+    codigos = set(manual["codigo"])
+    return pd.concat([oferta[~oferta["codigo"].isin(codigos)], pd.DataFrame(nuevas)], ignore_index=True)
+
+
 def main():
     descargar()
     oferta = pd.concat([universidades(), institutos(), instituciones_extra()], ignore_index=True)
+    oferta = programas_manuales(oferta)
     oferta["programa"] = oferta["programa"].str.upper()
     oferta["area"] = [clasificar(p, f) for p, f in zip(oferta["programa"], oferta["familia"])]
     # SUNEDU escribe 'JUNÍN' y MINEDU 'JUNIN': sin tildes para que coincidan entre sí y con el mapa
