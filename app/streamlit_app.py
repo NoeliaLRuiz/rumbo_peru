@@ -119,6 +119,8 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .fila-region .barra i {{display: block; height: 100%; background: {AZUL}; border-radius: 999px;}}
 .fila-region .num {{text-align: right; font-weight: 700; color: {AZUL_OSCURO};}}
 .fila-region.actual {{background: {AZUL_SUAVE}; font-weight: 700;}}
+.dato.adm {{background: #fef3c7; border-radius: 10px; padding: 6px 10px; margin: 6px 0;}}
+.dato.adm small {{color: {GRIS};}}
 .inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
@@ -215,6 +217,7 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
     df["perfil_link"] = [enlace_perfil(n, p, w) for n, p, w in zip(df["institucion"], df["programa"], df["web"])]
+    df["admision_link"] = [enlace_admision(n, w) for n, w in zip(df["institucion"], df["web"])]
     logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)
     df["logo"] = [logo_url(n, w) for n, w in zip(df["nombre_corto"].fillna(df["institucion"]), logos_web)]
     # Miniatura cuadrada con el logo completo (data/miniaturas_logos.py): así no se corta en tablas ni tarjetas
@@ -232,6 +235,25 @@ def cargar_geo() -> dict:
 
 def tiene_web(x) -> bool:
     return isinstance(x, str) and x.startswith("http")
+
+
+def enlace_admision(institucion: str, web) -> str:
+    """Enlace a las fechas de admisión vigentes: busca dentro de la web oficial de la institución."""
+    if tiene_web(web):
+        consulta = f'site:{urlparse(web).netloc.replace("www.", "")} admisión cronograma'
+    else:
+        consulta = f'"{institucion}" admisión cronograma'
+    return "https://www.google.com/search?q=" + quote_plus(consulta)
+
+
+@st.cache_data
+def cargar_admision() -> dict:
+    """Meses de admisión verificados a mano (data/admision_manual.csv), con su fuente y fecha de revisión."""
+    archivo = RAIZ / "data" / "admision_manual.csv"
+    if not archivo.exists():
+        return {}
+    a = pd.read_csv(archivo, dtype=str).fillna("")
+    return {r.codigo: r._asdict() for r in a.itertuples(index=False)}
 
 
 def enlace_perfil(institucion: str, programa: str, web) -> str:
@@ -509,6 +531,16 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
                         f"{'gratuita o de bajo costo' if r.gestion == 'Pública' else 'pensión, consultar'}</div>"
                         f"<div class='dato'><b>Ubicación:</b> {r.distrito.title()}, {r.departamento.title()}</div>",
                         unsafe_allow_html=True)
+            adm = cargar_admision().get(r.codigo)
+            if adm and adm["meses"]:
+                st.markdown(f"<div class='dato adm'>📅 <b>Admisión:</b> {adm['meses']}"
+                            + (f" · {adm['detalle']}" if adm["detalle"] else "")
+                            + f"<br><small>Fuente: {adm['fuente']} (revisado {adm['revisado']})</small></div>",
+                            unsafe_allow_html=True)
+                st.link_button("📅 Confirmar fechas de admisión ↗", r.admision_link, width="stretch")
+            else:
+                st.link_button("📅 Ver fechas de admisión ↗", r.admision_link, width="stretch",
+                               help="Busca el cronograma de admisión vigente en la web oficial de la institución")
             st.link_button("Ver su perfil de egreso oficial ↗", r.perfil_link, width="stretch", type="primary")
             if tiene_web(r.web):
                 st.link_button("Ir a su web ↗", r.web, width="stretch")
