@@ -1,10 +1,10 @@
 """Test de intereses basado en el modelo RIASEC de John Holland.
 
-36 afirmaciones, 6 por cada tipo de interés (Realista, Investigativa, Artística, Social, Emprendedora
+36 preguntas, 6 por cada tipo de interés (Realista, Investigativa, Artística, Social, Emprendedora
 y Convencional), redactadas por la founder. Se responden con una escala de 1 (no me interesa) a 5
 (me interesa mucho).
 
-Para responder, se presentan en 6 partes de 6 afirmaciones; cada parte tiene una afirmación de cada
+Para responder, se presentan en 6 partes de 6 preguntas; cada parte tiene una pregunta de cada
 tipo, así ningún bloque revela qué se está midiendo y el cansancio se reparte por igual.
 """
 from ai.areas import AREAS
@@ -64,9 +64,9 @@ AFIRMACIONES = {
 ORDEN = ["R", "I", "A", "S", "E", "C"]
 ICONOS_PARTE = ["🔧", "🔬", "🎨", "🤝", "🚀", "📋"]
 
-# 6 partes: la parte k tiene la afirmación k de cada dimensión
+# 6 partes: la parte k tiene la pregunta k de cada dimensión
 SECCIONES_TEST = [
-    (f"Parte {k + 1} · afirmaciones {6 * k + 1} a {6 * k + 6}", ICONOS_PARTE[k],
+    (f"Parte {k + 1} · preguntas {6 * k + 1} a {6 * k + 6}", ICONOS_PARTE[k],
      [(d, AFIRMACIONES[d][k], "") for d in ORDEN])
     for k in range(6)
 ]

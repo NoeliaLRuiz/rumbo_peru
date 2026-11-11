@@ -54,7 +54,7 @@ COLOR_GESTION = {"Pública": AZUL, "Privada": AMBAR}  # opción 1: azul + ámbar
 # Mapa por regiones: de turquesa claro a azul marino
 ESCALA_AZUL = [[0, "#f0fdf4"], [0.15, "#d1fae5"], [0.32, "#a7f3d0"], [0.5, "#6ee7b7"], [0.66, "#34d399"],
                [0.82, "#059669"], [1, "#064e3b"]]
-N_PASOS = 6  # partes del test: 6 afirmaciones por parte, una de cada tipo de interés
+N_PASOS = 6  # partes del test: 6 preguntas por parte, una de cada tipo de interés
 
 st.markdown(f"""
 <style>
@@ -1088,7 +1088,7 @@ with tab_comparar:
 # ============================================================
 with tab_colegios:
     seccion(1, "Cómo funciona", "De la duda a un plan concreto en una clase de tutoría", "como")
-    pasos = [("🧭", "El estudiante hace el test", "36 afirmaciones en 6 partes, desde el celular o la sala de cómputo."),
+    pasos = [("🧭", "El estudiante hace el test", "36 preguntas en 6 partes, desde el celular o la sala de cómputo."),
              ("🤖", "La IA interpreta su perfil", "Explica sus intereses y sugiere carreras reales del Perú."),
              ("🗺️", "Ve dónde estudiar", "Mapa con instituciones públicas y privadas de su región y su web."),
              ("📄", "El tutor recibe el reporte", "Para conversar con el estudiante y su familia.")]
@@ -1121,9 +1121,9 @@ with tab_colegios:
 
     seccion(4, "Sobre el test", "Cómo se construyeron las preguntas", "sobre_test")
     st.markdown("- Se basa en el **modelo RIASEC de John Holland**: seis tipos de interés (Realista, Investigador, "
-                "Artístico, Social, Emprendedor y Convencional). Son **36 afirmaciones (6 por tipo)** que se responden con "
-                "una escala de 1 (no me interesa) a 5 (me interesa mucho), en 6 partes con una afirmación de cada tipo.\n"
-                "- Las afirmaciones fueron **elaboradas por la founder** a partir del modelo RIASEC: cada una describe "
+                "Artístico, Social, Emprendedor y Convencional). Son **36 preguntas (6 por tipo)** que se responden con "
+                "una escala de 1 (no me interesa) a 5 (me interesa mucho), en 6 partes con una pregunta de cada tipo.\n"
+                "- Las preguntas fueron **elaboradas por la founder** a partir del modelo RIASEC: cada una describe "
                 "una actividad de un solo tipo de interés, y se responde según el interés, no según la habilidad.\n"
                 "- **Es una herramienta de orientación, no un diagnóstico.** Conviene conversar el resultado con "
                 "un tutor o psicólogo.")
