@@ -68,11 +68,15 @@ st.markdown(f"""
 .hero .stat span {{font-size: .82rem; opacity: .9;}}
 
 /* Secciones */
-.sec {{margin: 38px 0 14px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; scroll-margin-top: 90px;
-      animation: aparecer .5s ease-out;}}
+/* Cada sección empieza con una franja propia, bien separada de la anterior */
+.sec {{margin: 52px 0 20px; padding: 18px 22px; scroll-margin-top: 90px; position: relative;
+      background: linear-gradient(90deg, {AZUL_SUAVE} 0%, #ffffff 85%); border: 1px solid #dbeafe;
+      border-left: 6px solid {AZUL}; border-radius: 16px; animation: aparecer .5s ease-out;}}
+.sec::before {{content: ""; position: absolute; left: 0; right: 0; top: -28px; border-top: 1px dashed #cbd5e1;}}
 .sec .eyebrow {{color: {AZUL}; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
-.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.65rem; margin: 2px 0 2px; padding: 0;}}
+.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
+.inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
 .nav {{display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 12px; background: {AZUL_SUAVE};
@@ -257,10 +261,14 @@ def centros_regiones() -> dict:
 
 def mapa_regiones(df: pd.DataFrame, metrica: str, key: str, height: int = 520, destacar: str | None = None):
     """Mapa coroplético interactivo del Perú por región: zoom con la rueda del mouse, arrastre y detalle al pasar."""
-    agg = (df.groupby("departamento")
-             .agg(ofertas=("programa", "size"), instituciones=("institucion", "nunique"),
-                  publica=("gestion", lambda s: round((s == "Pública").mean() * 100, 1)))
-             .reindex([f["properties"]["NOMBDEP"] for f in GEO["features"]], fill_value=0))
+    regiones_geo = [f["properties"]["NOMBDEP"] for f in GEO["features"]]
+    if df.empty:  # sin resultados: todas las regiones en cero
+        agg = pd.DataFrame(0, index=regiones_geo, columns=["ofertas", "instituciones", "publica"])
+    else:
+        agg = (df.groupby("departamento")
+                 .agg(ofertas=("programa", "size"), instituciones=("institucion", "nunique"),
+                      publica=("gestion", lambda s: round((s == "Pública").mean() * 100, 1)))
+                 .reindex(regiones_geo).fillna(0))
     col = METRICAS[metrica]
     fig = go.Figure(go.Choroplethmap(
         geojson=GEO, featureidkey="properties.NOMBDEP", locations=agg.index, z=agg[col],
@@ -319,8 +327,9 @@ def mapa_instituciones(df: pd.DataFrame, key: str, height: int = 470):
             fill_color=COLOR_GESTION[r.gestion], fill_opacity=0.95,
             tooltip=f"{r.institucion} · {r.gestion}",
             popup=folium.Popup(f"<div style='font-family:Inter,sans-serif;font-size:13px'>"
-                               f"<div style='margin-bottom:6px'>{logo_html(r, 48, 160)}</div>"
-                               f"<b style='color:{AZUL_OSCURO}'>{r.institucion}</b><br>"
+                               f"<div style='margin-bottom:4px'>{logo_html(r, 30, 90)}</div>"
+                               f"<div style='font-weight:800;font-size:15px;color:{AZUL_OSCURO};"
+                               f"line-height:1.25;margin-bottom:2px'>{r.institucion}</div>"
                                f"<span style='color:{GRIS}'>{r.tipo} · {r.gestion}<br>"
                                f"{r.distrito.title()}, {r.provincia.title()}</span>"
                                f"<ul style='padding-left:16px;margin:6px 0'>{lista}{extra}</ul>{enlaces}</div>",
@@ -441,10 +450,9 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
     for col, i in zip(st.columns(len(elegidas)), elegidas):
         r = sub.loc[i]
         with col, st.container(border=True, key=f"card_cmp_{k}_{i}"):
-            st.markdown(f"<div style='height:78px;display:flex;align-items:center;margin-bottom:8px'>"
-                        f"{logo_html(r, 70, 220)}</div>"
-                        f"<div style='font-weight:800;font-size:1.02rem;color:{AZUL_OSCURO};line-height:1.25'>"
-                        f"{r.institucion}</div>"
+            # El nombre es lo principal; el logo va pequeño, como apoyo visual
+            st.markdown(f"<div style='margin-bottom:8px'>{logo_html(r, 40, 120)}</div>"
+                        f"<div class='inst-nombre'>{r.institucion}</div>"
                         f"<div style='color:{GRIS};font-size:.9rem;margin-bottom:6px'>{r.programa.title()}</div>"
                         f"{pill_gestion(r.gestion)}<span class='pill tipo'>{r.tipo}</span>"
                         f"<div class='dato'><b>Al egresar:</b> {r.certificacion}</div>"
@@ -784,18 +792,23 @@ with tab_panorama:
 # ============================================================
 with tab_explorar:
     seccion("Explorar", "Toda la oferta de educación superior del Perú",
-            "Busca por carrera o por institución y míralo en el mapa", "explorar")
-    e1, e2, e3, e4 = st.columns([2, 1, 1, 1])
-    texto = e1.text_input("Carrera o institución", placeholder="enfermería, SENATI, Monterrico, diseño...")
-    region_e = e2.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title)
-    gestion_e = e3.selectbox("Gestión ", ["Ambas", "Pública", "Privada"])
-    tipos = e4.multiselect("Tipo de institución", sorted(oferta["tipo"].unique()))
+            "Filtra por carrera, institución, región y gestión, y míralo en el mapa", "explorar")
+    # Dos filtros separados: la carrera solo busca en carreras y la institución solo en instituciones
+    e1, e2 = st.columns(2)
+    texto = e1.text_input("Carrera", placeholder="enfermería, contabilidad, diseño, educación...")
+    texto_inst = e2.text_input("Institución (opcional)", placeholder="San Marcos, SENATI, Monterrico...")
+    e3, e4, e5 = st.columns([1, 1, 2])
+    region_e = e3.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title)
+    gestion_e = e4.selectbox("Gestión ", ["Ambas", "Pública", "Privada"])
+    tipos = e5.multiselect("Tipo de institución", sorted(oferta["tipo"].unique()))
     q = oferta
+    sin_t = str.maketrans("ÁÉÍÓÚ", "AEIOU")
     if texto:
-        sin_t = str.maketrans("ÁÉÍÓÚ", "AEIOU")
         buscado = texto.upper().translate(sin_t)
-        q = q[q["programa"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)
-              | q["institucion"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
+        q = q[q["programa"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
+    if texto_inst:
+        buscado = texto_inst.upper().translate(sin_t)
+        q = q[q["institucion"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
     if gestion_e != "Ambas":
         q = q[q["gestion"] == gestion_e]
     if tipos:
