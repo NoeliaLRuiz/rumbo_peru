@@ -38,12 +38,13 @@ st.html("<script>document.documentElement.lang = 'es';"
 # ============================================================
 # Estilo
 # ============================================================
-AZUL, AZUL_OSCURO, CELESTE, AZUL_SUAVE, GRIS = "#1d4ed8", "#1e3a8a", "#38bdf8", "#eff6ff", "#64748b"
+# Paleta verde esmeralda (los nombres AZUL_* se mantienen por compatibilidad: hoy son tonos de verde)
+AZUL, AZUL_OSCURO, CELESTE, AZUL_SUAVE, GRIS = "#059669", "#064e3b", "#34d399", "#ecfdf5", "#64748b"
 AMBAR, AMBAR_OSCURO = "#f59e0b", "#78350f"
 COLOR_GESTION = {"Pública": AZUL, "Privada": AMBAR}  # opción 1: azul + ámbar
 # Mapa por regiones: de turquesa claro a azul marino
-ESCALA_AZUL = [[0, "#ecfeff"], [0.12, "#ccfbf1"], [0.3, "#5eead4"], [0.5, "#2dd4bf"], [0.65, "#0ea5e9"],
-               [0.82, "#2563eb"], [1, "#1e3a8a"]]
+ESCALA_AZUL = [[0, "#f0fdf4"], [0.15, "#d1fae5"], [0.32, "#a7f3d0"], [0.5, "#6ee7b7"], [0.66, "#34d399"],
+               [0.82, "#059669"], [1, "#064e3b"]]
 N_PASOS = 4  # bloques de preguntas: 6 preguntas por bloque, una de cada tipo de interés
 
 st.markdown(f"""
@@ -86,7 +87,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 /* Secciones */
 /* Cada sección empieza con una franja propia, bien separada de la anterior */
 .sec {{margin: 52px 0 20px; padding: 18px 22px; scroll-margin-top: 90px; position: relative;
-      background: linear-gradient(90deg, {AZUL_SUAVE} 0%, #ffffff 85%); border: 1px solid #dbeafe;
+      background: linear-gradient(90deg, {AZUL_SUAVE} 0%, #ffffff 85%); border: 1px solid #d1fae5;
       border-left: 6px solid {AZUL}; border-radius: 16px; animation: aparecer .5s ease-out;}}
 .sec::before {{content: ""; position: absolute; left: 0; right: 0; top: -28px; border-top: 1px dashed #cbd5e1;}}
 .sec .eyebrow {{color: {AZUL}; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
@@ -112,19 +113,25 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .callout {{background: {AZUL}; color: #fff; border-radius: 14px; padding: 12px 16px; font-size: .95rem; margin-bottom: 14px;}}
 .pregunta-sec {{font-size: 1.45rem; font-weight: 800; color: {AZUL_OSCURO}; margin: 8px 0 2px;}}
 .nota {{color: {GRIS}; margin-bottom: 10px;}}
+.fila-region {{display: grid; grid-template-columns: 110px 1fr 38px; align-items: center; gap: 8px;
+               padding: 5px 6px; border-radius: 8px; font-size: .9rem;}}
+.fila-region .barra {{background: #f1f5f9; border-radius: 999px; height: 10px; overflow: hidden;}}
+.fila-region .barra i {{display: block; height: 100%; background: {AZUL}; border-radius: 999px;}}
+.fila-region .num {{text-align: right; font-weight: 700; color: {AZUL_OSCURO};}}
+.fila-region.actual {{background: {AZUL_SUAVE}; font-weight: 700;}}
 .inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
 .nav {{display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 12px; background: {AZUL_SUAVE};
-      border: 1px solid #dbeafe; border-radius: 14px; margin: 4px 0 6px;}}
+      border: 1px solid #d1fae5; border-radius: 14px; margin: 4px 0 6px;}}
 .nav a {{color: {AZUL_OSCURO} !important; text-decoration: none; font-weight: 600; font-size: .88rem;
         padding: 6px 12px; border-radius: 10px; transition: all .15s;}}
 .nav a:hover {{background: {AZUL}; color: #fff !important;}}
 
 /* Indicadores */
 .kpis {{display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 6px 0 14px;}}
-.kpi {{background: #fff; border: 1px solid #dbeafe; border-top: 4px solid {AZUL}; border-radius: 14px;
-      padding: 12px 16px; box-shadow: 0 4px 14px rgba(29,78,216,.06);}}
+.kpi {{background: #fff; border: 1px solid #d1fae5; border-top: 4px solid {AZUL}; border-radius: 14px;
+      padding: 12px 16px; box-shadow: 0 4px 14px rgba(5,150,105,.06);}}
 .kpi .v {{font-size: 1.65rem; font-weight: 800; color: {AZUL_OSCURO}; line-height: 1.2;}}
 .kpi .l {{color: {GRIS}; font-size: .83rem;}}
 .kpi.claro {{border-top-color: {AMBAR};}}
@@ -136,19 +143,19 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .pill {{display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: .78rem; font-weight: 600;
        margin: 0 4px 4px 0;}}
 .pill.pub {{background: {AZUL}; color: #fff;}} .pill.pri {{background: {AMBAR}; color: {AMBAR_OSCURO};}}
-.pill.tipo {{background: {AZUL_SUAVE}; color: {AZUL_OSCURO}; border: 1px solid #bfdbfe;}}
+.pill.tipo {{background: {AZUL_SUAVE}; color: {AZUL_OSCURO}; border: 1px solid #a7f3d0;}}
 .leyenda {{font-size: .85rem; color: {GRIS};}}
 .leyenda i {{display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin: 0 5px 0 12px;
             vertical-align: middle;}}
 .dato {{font-size: .92rem; margin: 4px 0;}} .dato b {{color: {AZUL_OSCURO};}}
-[class*="st-key-card"] {{background: #fff; border-color: #dbeafe !important; border-radius: 16px !important;
+[class*="st-key-card"] {{background: #fff; border-color: #d1fae5 !important; border-radius: 16px !important;
                         transition: transform .2s, box-shadow .2s; animation: aparecer .5s ease-out;}}
-[class*="st-key-card"]:hover {{transform: translateY(-3px); box-shadow: 0 14px 28px rgba(29,78,216,.14);
-                              border-color: #93c5fd !important;}}
-[class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #dbeafe !important; background: #fff;}}
-.stTabs [data-baseweb="tab-list"] {{gap: 4px; border-bottom: 1px solid #dbeafe;}}
+[class*="st-key-card"]:hover {{transform: translateY(-3px); box-shadow: 0 14px 28px rgba(5,150,105,.14);
+                              border-color: #6ee7b7 !important;}}
+[class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
+.stTabs [data-baseweb="tab-list"] {{gap: 4px; border-bottom: 1px solid #d1fae5;}}
 .stTabs [data-baseweb="tab"] {{font-weight: 600; padding: 10px 16px;}}
-.pie {{margin-top: 48px; padding: 18px 0; border-top: 1px solid #dbeafe; color: {GRIS}; font-size: .85rem;
+.pie {{margin-top: 48px; padding: 18px 0; border-top: 1px solid #d1fae5; color: {GRIS}; font-size: .85rem;
       text-align: center;}}
 @keyframes aparecer {{from {{opacity: 0; transform: translateY(10px);}} to {{opacity: 1; transform: none;}}}}
 </style>
@@ -248,7 +255,7 @@ def logo_url(nombre: str, logo_web) -> str:
         return logo_web
     iniciales = "".join(w[0] for w in str(nombre).upper().split() if w not in PALABRAS_NOMBRE and w[0].isalpha())[:2]
     svg = (f"<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><circle cx='32' cy='32' r='32' "
-           f"fill='#1d4ed8'/><text x='32' y='41' font-family='Arial' font-size='24' font-weight='700' "
+           f"fill='#059669'/><text x='32' y='41' font-family='Arial' font-size='24' font-weight='700' "
            f"fill='white' text-anchor='middle'>{iniciales or '?'}</text></svg>")
     return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
 
@@ -256,7 +263,7 @@ def logo_url(nombre: str, logo_web) -> str:
 def logo_html(r, alto: int = 56, ancho_max: int = 170) -> str:
     """Logo con alto fijo y ancho proporcional (los logos horizontales no se encogen)."""
     return (f"<img src='{r.logo}' style='height:{alto}px;width:auto;max-width:{ancho_max}px;min-width:{alto}px;"
-            f"object-fit:contain;border-radius:10px;background:#fff;border:1px solid #dbeafe;padding:4px;"
+            f"object-fit:contain;border-radius:10px;background:#fff;border:1px solid #d1fae5;padding:4px;"
             f"vertical-align:middle'>")
 
 
@@ -508,7 +515,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
             else:
                 st.link_button("Buscar más información ↗", r.buscar, width="stretch")
 
-    izq, der = st.columns([3, 2])
+    izq = st.container()
     with izq:
         st.markdown("##### Perfil de egreso referencial")
         # Un perfil por cada combinación carrera + nivel elegida (p. ej. Enfermería universitaria vs. técnica)
@@ -525,10 +532,6 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
         st.caption("Perfil referencial generado " + ("con IA" if p.get("fuente") == "ia" else "con plantillas")
                    + " para el nivel de formación, no para una institución en particular. "
                      "Revisa el perfil de egreso oficial en la web de cada institución.")
-    with der:
-        st.markdown("##### Ubicación de las instituciones")
-        with st.container(border=True, key=f"mapa_cmp_{k}"):
-            mapa_instituciones(sub.loc[elegidas], key=f"mapa_cmp_{k}_{'_'.join(map(str, elegidas))}", height=340)
 
 
 # ============================================================
@@ -689,14 +692,15 @@ with tab_test:
                 valores = list(punt.values()) + [next(iter(punt.values()))]
                 radar = go.Figure(go.Scatterpolar(
                     r=valores, theta=etiquetas, fill="toself", line={"color": AZUL, "width": 2.5},
-                    fillcolor="rgba(56,189,248,.30)", marker={"size": 7, "color": AZUL_OSCURO},
+                    fillcolor="rgba(52,211,153,.30)", marker={"size": 7, "color": AZUL_OSCURO},
                     hovertemplate="%{theta}: %{r:.0f}/100<extra></extra>"))
                 radar.update_layout(polar={"radialaxis": {"range": [0, 100], "showticklabels": False,
-                                                          "gridcolor": "#dbeafe"},
-                                           "angularaxis": {"gridcolor": "#dbeafe"}, "bgcolor": "#fff"},
+                                                          "gridcolor": "#d1fae5"},
+                                           "angularaxis": {"gridcolor": "#d1fae5"}, "bgcolor": "#fff"},
                                     margin={"l": 50, "r": 50, "t": 25, "b": 25}, height=330, showlegend=False,
                                     font={"family": "Inter", "size": 13})
                 st.plotly_chart(radar, width="stretch", config={"displayModeBar": False})
+                st.caption("Cuanto más lejos del centro, más te interesan ese tipo de actividades.")
 
         # 02 Áreas
         elif sec == 1:
@@ -706,6 +710,7 @@ with tab_test:
                                 f"<div style='font-weight:700;color:{AZUL_OSCURO};min-height:2.6rem'>"
                                 f"{AREAS[a]['nombre']}</div>", unsafe_allow_html=True)
                     st.progress(min(s_ / 100, 1.0), text=f"Afinidad {s_:.0f}/100")
+            st.caption("La barra muestra qué tanto se parecen tus intereses a lo que se hace en cada área.")
             otras = ", ".join(AREAS[a]["nombre"] for a, _ in ranking[4:7])
             st.caption(f"Otras áreas con algo de afinidad: {otras}.")
 
@@ -753,9 +758,17 @@ with tab_test:
                     st.warning("No hay oferta con esos filtros. Prueba con «Carreras parecidas» o con otra región.")
                 else:
                     mapa_instituciones(sel, key=f"mapa_donde_{prog}_{region}_{gestion}_{ss['d_similares']}")
-            with der, st.container(border=True, key="mapa_nacional_carrera"):
-                st.markdown(f"**¿En qué regiones se ofrece?** · {prog.title()}")
-                mapa_regiones(base, "Ofertas de estudio", key="ch_carrera", height=450)
+            with der, st.container(border=True, key="card_otras_regiones"):
+                st.markdown(f"**¿En qué regiones se ofrece?**")
+                st.caption("Las regiones con más lugares para estudiar esta carrera.")
+                por_region = base["departamento"].value_counts().head(8)
+                maximo = int(por_region.max()) if len(por_region) else 1
+                st.markdown("".join(
+                    f"<div class='fila-region{' actual' if dep == region else ''}'>"
+                    f"<span class='nom'>{dep.title()}</span>"
+                    f"<span class='barra'><i style='width:{100 * n / maximo:.0f}%'></i></span>"
+                    f"<span class='num'>{n}</span></div>" for dep, n in por_region.items()),
+                    unsafe_allow_html=True)
             if not sel.empty:
                 tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
                 tabla["programa"] = tabla["programa"].str.title()
@@ -843,8 +856,8 @@ with tab_panorama:
             st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
             por_tipo = oferta.groupby("tipo")["institucion"].nunique().sort_values(ascending=False)
             dona = go.Figure(go.Pie(labels=por_tipo.index, values=por_tipo.values, hole=.6, sort=False,
-                                    marker={"colors": ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd",
-                                                       "#bfdbfe", "#38bdf8", "#0ea5e9"]},
+                                    marker={"colors": ["#064e3b", "#059669", "#10b981", "#34d399", "#6ee7b7",
+                                                       "#a7f3d0", "#34d399", "#14b8a6"]},
                                     textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>"))
             dona.update_layout(title={"text": "Instituciones por tipo", "font": {"size": 14}}, height=230,
                                margin={"l": 10, "r": 10, "t": 40, "b": 10}, font={"family": "Inter", "size": 11},
@@ -898,7 +911,7 @@ with tab_explorar:
           (f"{(q['gestion'] == 'Privada').sum():,}", "ofertas privadas")], claro_desde=3)
 
     # Explorar es el buscador: dónde está cada carrera o institución (el análisis por región está en Panorama)
-    v1, v2, v3 = st.tabs(["Mapa de instituciones", "Lista", "Resumen"])
+    v1, v2 = st.tabs(["🗺️ Mapa", "📋 Lista"])
     with v1:
         sedes = q.drop_duplicates(["institucion", "lat", "lon"])
         if q.empty:
@@ -914,21 +927,6 @@ with tab_explorar:
                      row_height=56, height=480)
         if len(q) > 1000:
             st.caption(f"Se muestran 1,000 de {len(q):,} resultados. Usa los filtros para acotar.")
-    with v3:
-        resumen = q.groupby(["tipo", "gestion"]).size().reset_index(name="n")
-        if resumen.empty:
-            st.info("No hay resultados con esos filtros.")
-        else:
-            fig = go.Figure([go.Bar(y=resumen[resumen["gestion"] == g]["tipo"],
-                                    x=resumen[resumen["gestion"] == g]["n"], name=g, orientation="h",
-                                    marker_color=COLOR_GESTION[g],
-                                    hovertemplate="%{y}: %{x}<extra>" + g + "</extra>")
-                             for g in ["Pública", "Privada"]])
-            fig.update_layout(barmode="stack", height=380, title={"text": "Resultados por tipo y gestión",
-                                                                   "font": {"size": 14}},
-                              margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
-                              legend={"orientation": "h", "y": -0.12}, font={"family": "Inter"})
-            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 # ============================================================
 # COMPARAR
