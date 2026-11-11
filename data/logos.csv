@@ -51,7 +51,7 @@ SUNEDU-039,https://uandina.edu.pe/_ipx/_/https://apiwww.uandina.edu.pe/storage/w
 SUNEDU-040,https://utea.edu.pe/wp-content/uploads/2024/10/Repositorio-institucional-01.png,img-logo
 SUNEDU-076,https://untrm.edu.pe/apple-touch-icon.png,apple-touch-icon
 SUNEDU-003,https://www.unsaac.edu.pe/wp-content/uploads/2023/01/cropped-escudo-oficial-02-2-2-e1675183581418-180x180.png,apple-touch-icon
-SUNEDU-035,https://www.unu.edu.pe/portal/plugins/system/jat3/jat3/base-themes/default/images/favicon.ico,icon
+SUNEDU-035,https://www.unu.edu.pe/portal/images/logo-para-web.png,img-logo
 SUNEDU-046,https://upao.edu.pe/img/logo.jpg,img-logo
 SUNEDU-087,https://portal.autonomadeica.edu.pe/favicon.ico,icon
 SUNEDU-032,https://www.unjbg.edu.pe/images/themes/unjbg/logo-sm.png,img-logo
@@ -161,13 +161,13 @@ MINEDU-1123447,https://ceam.edu.pe/wp-content/uploads/2025/04/LOGOS-UDIT-INNOVAC
 MINEDU-1124726,https://eespinternacionalelim.edu.pe/shared/images/branding/logo-escudo-pedagogico.png,img-logo
 MINEDU-1114412,https://www.ena.edu.pe/wp-content/uploads/2023/05/cropped-ENA_HORIZONTAL_380x108.png,img-logo
 MINEDU-1067131,https://nicolascopernico.edu.pe/wp-content/uploads/2022/11/LOGO-CEBA-NICOLAS-COPERNICO-02.jpg,img-logo
-MINEDU-1124072,https://www.monterrico.edu.pe/wp-content/uploads/2021/02/Logo-Monterrico-1.png,img-logo
 MINEDU-1123686,https://ela.edu.pe/wp-content/uploads/2025/03/Captura-de-pantalla-2025-03-24-a-las-1.19.42 p.-m.png,img-logo
 MINEDU-1233253,https://ilcb.edu.pe/wp-content/uploads/2025/12/logo-instituto.png,img-logo
 MINEDU-1123561,,sin logo
 MINEDU-1124601,https://www.gob.pe/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6Njg0MjQsInB1ciI6ImJsb2JfaWQifX0=--45253236bd5eee483d62580cfbb5cb1b9112f6ce/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDQ4XX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--830247c4bafe7cadca50817d8559bf1a09e3aa28/LOGO-CENFOTUR-475-260.png,img-logo
 MINEDU-1257013,https://www.ispdn.edu.pe/img/logo.png,img-logo
 MINEDU-1468040,https://avia.edu.pe/wp-content/uploads/2023/02/logo-avia-ok.png,img-logo
+MINEDU-0337915,https://istpargentina.edu.pe/wp-content/uploads/2025/12/cropped-logo_argentina-180x180.png,apple-touch-icon
 MINEDU-1114818,https://teccen.edu.pe/wp-content/uploads/2023/01/cropped-logotipoteccen-180x180.png,apple-touch-icon
 MINEDU-0326132,https://www.ensb.edu.pe/wp-content/uploads/elementor/thumbs/ENSB_logoweb-oyj4rjvlpy743djg3qnibarwlsiq85pl5dendclc00.png,img-logo
 MINEDU-1122951,https://telesup.edu.pe/wp-content/uploads/2017/06/cropped-icono-180x180.png,apple-touch-icon
@@ -252,3 +252,4 @@ MINEDU-1801828,https://back.sise.edu.pe/uploads/logo_cientifica_713ac9cdcb.svg,i
 MANUAL-ENSF,https://www.escuelafolklore.edu.pe/wp-content/uploads/2016/12/logo.png,img-logo
 MANUAL-ENSABAP,,sin logo
 MANUAL-ENSAD,https://www.ensad.edu.pe/wp-content/uploads/2026/04/LOGOFINALENSAD-300x91-1.png,img-logo
+MINEDU-1124072,https://www.monterrico.edu.pe/wp-content/uploads/2021/02/Logo-Monterrico-1.png,img-logo
