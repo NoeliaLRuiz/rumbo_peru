@@ -787,12 +787,25 @@ with tab_panorama:
                                legend={"font": {"size": 10}})
             st.plotly_chart(dona, width="stretch", config={"displayModeBar": False})
 
+    st.markdown("##### Comparación entre regiones")
+    st.caption("Ordena cualquier columna con un clic para ver qué regiones tienen más o menos oferta.")
+    tabla_reg = (oferta.groupby("departamento")
+                 .agg(ofertas=("programa", "size"), instituciones=("institucion", "nunique"),
+                      universidades=("tipo", lambda t: int((t == "Universidad").sum())),
+                      publica=("gestion", lambda g: round((g == "Pública").mean() * 100, 1)))
+                 .reset_index().sort_values("ofertas", ascending=False))
+    tabla_reg["departamento"] = tabla_reg["departamento"].str.title()
+    st.dataframe(tabla_reg, hide_index=True, width="stretch", height=420, column_config={
+        "departamento": "Región", "ofertas": "Ofertas de estudio", "instituciones": "Instituciones",
+        "universidades": "Ofertas universitarias",
+        "publica": st.column_config.ProgressColumn("% oferta pública", min_value=0, max_value=100, format="%.0f%%")})
+
 # ============================================================
 # EXPLORAR
 # ============================================================
 with tab_explorar:
     seccion("Explorar", "Toda la oferta de educación superior del Perú",
-            "Filtra por carrera, institución, región y gestión, y míralo en el mapa", "explorar")
+            "Busca una carrera o una institución y mira dónde está, con su web y su perfil de egreso", "explorar")
     # Dos filtros separados: la carrera solo busca en carreras y la institución solo en instituciones
     e1, e2 = st.columns(2)
     texto = e1.text_input("Carrera", placeholder="enfermería, contabilidad, diseño, educación...")
@@ -813,7 +826,6 @@ with tab_explorar:
         q = q[q["gestion"] == gestion_e]
     if tipos:
         q = q[q["tipo"].isin(tipos)]
-    q_nacional = q
     if region_e != "TODAS":
         q = q[q["departamento"] == region_e]
 
@@ -821,37 +833,38 @@ with tab_explorar:
           (f"{(q['gestion'] == 'Pública').sum():,}", "ofertas públicas"),
           (f"{(q['gestion'] == 'Privada').sum():,}", "ofertas privadas")], claro_desde=3)
 
-    v1, v2, v3 = st.tabs(["Mapa por región", "Mapa de instituciones", "Tabla"])
+    # Explorar es el buscador: dónde está cada carrera o institución (el análisis por región está en Panorama)
+    v1, v2, v3 = st.tabs(["Mapa de instituciones", "Lista", "Resumen"])
     with v1:
-        izq, der = st.columns([3, 2], gap="large")
-        with izq, st.container(border=True, key="mapa_exp_reg"):
-            met_e = st.segmented_control("Ver en el mapa ", list(METRICAS), default="Ofertas de estudio",
-                                         key="met_explorar") or "Ofertas de estudio"
-            mapa_regiones(q_nacional, met_e, key="ch_explorar", height=480)
-        with der:
-            resumen = q.groupby(["tipo", "gestion"]).size().reset_index(name="n")
-            if not resumen.empty:
-                fig = go.Figure([go.Bar(y=resumen[resumen["gestion"] == g]["tipo"],
-                                        x=resumen[resumen["gestion"] == g]["n"], name=g, orientation="h",
-                                        marker_color=COLOR_GESTION[g], hovertemplate="%{y}: %{x}<extra>" + g + "</extra>")
-                                 for g in ["Pública", "Privada"]])
-                fig.update_layout(barmode="stack", height=420, title={"text": "Ofertas por tipo y gestión",
-                                                                       "font": {"size": 14}},
-                                  margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
-                                  legend={"orientation": "h", "y": -0.12}, font={"family": "Inter"})
-                st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
-    with v2:
         sedes = q.drop_duplicates(["institucion", "lat", "lon"])
-        if len(sedes) > 1500:
-            st.info(f"Hay {len(sedes):,} sedes. Elige una región o escribe una carrera para ver el mapa de instituciones.")
+        if q.empty:
+            st.info("No hay resultados con esos filtros.")
+        elif len(sedes) > 1500:
+            st.info(f"Hay {len(sedes):,} sedes. Escribe una carrera o elige una región para ver el mapa.")
         else:
             with st.container(border=True, key="mapa_exp_pts"):
-                mapa_instituciones(q, key=f"mapa_exp_{texto}_{region_e}_{gestion_e}_{len(q)}", height=520)
-    with v3:
-        st.dataframe(q[COLUMNAS_TABLA].head(1000), hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56,
-                     height=480)
+                mapa_instituciones(q, key=f"mapa_exp_{texto}_{texto_inst}_{region_e}_{gestion_e}_{len(q)}",
+                                   height=520)
+    with v2:
+        st.dataframe(q[COLUMNAS_TABLA].head(1000), hide_index=True, width="stretch", column_config=CONFIG_TABLA,
+                     row_height=56, height=480)
         if len(q) > 1000:
             st.caption(f"Se muestran 1,000 de {len(q):,} resultados. Usa los filtros para acotar.")
+    with v3:
+        resumen = q.groupby(["tipo", "gestion"]).size().reset_index(name="n")
+        if resumen.empty:
+            st.info("No hay resultados con esos filtros.")
+        else:
+            fig = go.Figure([go.Bar(y=resumen[resumen["gestion"] == g]["tipo"],
+                                    x=resumen[resumen["gestion"] == g]["n"], name=g, orientation="h",
+                                    marker_color=COLOR_GESTION[g],
+                                    hovertemplate="%{y}: %{x}<extra>" + g + "</extra>")
+                             for g in ["Pública", "Privada"]])
+            fig.update_layout(barmode="stack", height=380, title={"text": "Resultados por tipo y gestión",
+                                                                   "font": {"size": 14}},
+                              margin={"l": 10, "r": 10, "t": 40, "b": 10}, plot_bgcolor="#fff",
+                              legend={"orientation": "h", "y": -0.12}, font={"family": "Inter"})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 # ============================================================
 # COMPARAR
