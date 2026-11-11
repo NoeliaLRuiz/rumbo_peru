@@ -131,7 +131,7 @@ def clasificar(programa: str, familia: str = "") -> str:
 
 
 ICONOS = {
-    "tecnologia": "💻", "salud": "🩺", "educacion": "📚", "agro_ambiente": "🌱", "construccion": "🏗️",
+    "tecnologia": "💻", "salud": "🏥", "educacion": "📚", "agro_ambiente": "🌱", "construccion": "🏗️",
     "comunicacion": "🎙️", "arte_diseno": "🎨", "derecho_sociales": "⚖️", "servicios": "🍳",
     "negocios": "📈", "ingenieria": "⚙️", "ciencias": "🔬",
 }

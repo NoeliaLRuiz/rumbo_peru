@@ -3,6 +3,7 @@
 Correr:  streamlit run app/streamlit_app.py
 """
 import json
+import re
 import sys
 from pathlib import Path
 import base64
@@ -308,6 +309,26 @@ def raiz_carrera(programa: str) -> str:
 ARCHIVO_OFERTA = RAIZ / "data" / "oferta.csv"
 
 
+CORTES_GRUPO = re.compile(r",|:|;| - | – |\(| CON MENCI| MENCI[OÓ]N| ESPECIALIDAD| ESP\.| CON ESPECIAL")
+CONECTORES_FINALES = {"EN", "LA", "EL", "DE", "DEL", "CON", "Y", "E", "PARA", "LOS", "LAS"}
+MINUSCULAS_NOMBRE = {"de", "del", "la", "las", "el", "los", "y", "e", "en", "para", "con", "a", "o"}
+
+
+def nombre_bonito(texto: str) -> str:
+    """'EDUCACIÓN SECUNDARIA CON ESPECIALIDAD EN INGLÉS' -> 'Educación Secundaria con Especialidad en Inglés'"""
+    palabras = str(texto).lower().split()
+    return " ".join(w if i and w in MINUSCULAS_NOMBRE else w.capitalize() for i, w in enumerate(palabras))
+
+
+def base_grupo(programa: str) -> str:
+    """Nombre principal de una carrera: lo que va antes de la especialidad o mención.
+    'EDUCACIÓN SECUNDARIA, ESPECIALIDAD MATEMÁTICA' -> 'EDUCACIÓN SECUNDARIA'"""
+    palabras = CORTES_GRUPO.split(str(programa), maxsplit=1)[0].strip(" .-").split()
+    while len(palabras) > 1 and normalizar(palabras[-1]) in CONECTORES_FINALES:
+        palabras.pop()
+    return " ".join(palabras) or str(programa)
+
+
 @st.cache_data
 def cargar_oferta(version: float) -> pd.DataFrame:
     """`version` = fecha de modificación del CSV: si se regeneran los datos, la caché se renueva sola."""
@@ -321,6 +342,11 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     consulta = prefijo + " " + df["institucion"] + " " + df["distrito"].fillna("").str.title() + " admisión"
     df["buscar"] = "https://www.google.com/search?q=" + consulta.map(lambda q: quote_plus(q))
     df["raiz"] = df["programa"].map(raiz_carrera)
+    # Grupo = nombre principal de la carrera (une 'Educación Secundaria, especialidad X' con sus variantes)
+    base = df["programa"].map(base_grupo)
+    clave = base.map(normalizar)
+    nombre_mas_comun = base.groupby(clave).agg(lambda b: b.value_counts().index[0])
+    df["grupo"] = clave.map(nombre_mas_comun).map(nombre_bonito)
     df["perfil_link"] = [enlace_perfil(n, p, w) for n, p, w in zip(df["institucion"], df["programa"], df["web"])]
     df["admision_link"] = [enlace_admision(n, w) for n, w in zip(df["institucion"], df["web"])]
     logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)
@@ -601,31 +627,51 @@ def perfil_cacheado(programa: str, nivel: str, area_id: str) -> dict:
 # ============================================================
 @st.cache_data
 def carreras_por_sector(version: float) -> dict:
-    """Para cada sector (área), sus carreras ordenadas por cuántos lugares las ofrecen."""
+    """{sector: {carrera principal: {nombre completo: lugares}}}, ordenado por cuántos lugares las ofrecen."""
     reales = oferta[~oferta["programa"].str.startswith(SIN_CARRERA)]
-    return {a: reales[reales["area"] == a]["programa"].value_counts().to_dict() for a in AREAS}
+    res = {}
+    for a in AREAS:
+        sub = reales[reales["area"] == a]
+        orden = sub["grupo"].value_counts().index
+        res[a] = {g: sub[sub["grupo"] == g]["programa"].value_counts().to_dict() for g in orden}
+    return res
 
 
 def elegir_sector_y_carrera(k: str, prog_inicial: str | None = None, permitir_todas: bool = False):
-    """Paso 1: el sector (Salud, Educación, …). Paso 2: la carrera dentro de ese sector."""
+    """Paso 1: el sector. Paso 2: la carrera por su nombre principal (p. ej. Educación Secundaria).
+    Paso 3: el nombre completo (p. ej. Educación Secundaria, especialidad Matemática).
+    Devuelve (sector, nombre completo o None, carrera principal o None)."""
     por_sector = carreras_por_sector(ARCHIVO_OFERTA.stat().st_mtime)
-    sector_inicial = oferta.loc[oferta["programa"] == prog_inicial, "area"].iloc[0] if prog_inicial else None
+    fila_ini = oferta.loc[oferta["programa"] == prog_inicial].head(1) if prog_inicial else oferta.head(0)
+    sector_inicial = fila_ini["area"].iloc[0] if len(fila_ini) else None
+    grupo_inicial = fila_ini["grupo"].iloc[0] if len(fila_ini) else None
     sector = st.pills("1 · Elige un sector", list(AREAS), key=f"{k}_sector",
                       default=sector_inicial if sector_inicial in AREAS else None,
                       format_func=lambda a: f"{icono_area(a)} {nombre_area(a)}",
                       required=not permitir_todas)
     if not sector:
         st.caption("Elige un sector para ver sus carreras (o deja todos para explorar toda la oferta).")
-        return None, None
-    conteo = por_sector[sector]
-    opciones = (["TODAS"] if permitir_todas else []) + list(conteo)
-    indice = opciones.index(prog_inicial) if prog_inicial in opciones else 0
-    carrera = st.selectbox(
-        f"2 · Elige la carrera ({len(conteo)} carreras en {nombre_area(sector)})", opciones, index=indice,
-        key=f"{k}_carrera_{sector}",
-        format_func=lambda p: "Todas las carreras del sector" if p == "TODAS"
-        else f"{p.title()} · {conteo[p]:,} lugar{'es' if conteo[p] != 1 else ''}", placeholder="Elige una opción")
-    return sector, (None if carrera == "TODAS" else carrera)
+        return None, None, None
+    grupos = por_sector[sector]
+    c1, c2 = st.columns(2)
+    opciones_g = (["TODAS"] if permitir_todas else []) + list(grupos)
+    grupo = c1.selectbox(
+        f"2 · Elige la carrera ({len(grupos)} en {nombre_area(sector)})", opciones_g,
+        index=opciones_g.index(grupo_inicial) if grupo_inicial in opciones_g else 0, key=f"{k}_grupo_{sector}",
+        format_func=lambda g: "Todas las carreras del sector" if g == "TODAS"
+        else f"{g} · {sum(grupos[g].values()):,} lugares", placeholder="Elige una opción")
+    if grupo == "TODAS":
+        return sector, None, None
+    variantes = grupos[grupo]
+    opciones_v = (["TODAS"] if permitir_todas and len(variantes) > 1 else []) + list(variantes)
+    carrera = c2.selectbox(
+        f"3 · Nombre completo de la carrera ({len(variantes)})", opciones_v,
+        index=opciones_v.index(prog_inicial) if prog_inicial in opciones_v else 0,
+        key=f"{k}_carrera_{sector}_{grupo}", disabled=len(opciones_v) == 1,
+        format_func=lambda p: f"Todas las variantes de {grupo}" if p == "TODAS"
+        else f"{nombre_bonito(p)} · {variantes[p]:,} lugar{'es' if variantes[p] != 1 else ''}",
+        placeholder="Elige una opción")
+    return sector, (None if carrera == "TODAS" else carrera), grupo
 
 
 def elegir_por_defecto(sub: pd.DataFrame, prog: str) -> list:
@@ -666,7 +712,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str, carreras: list | 
                             key=f"{k}_carrera_sugerida", format_func=str.title, on_change=sincronizar,
                             placeholder="Elige una opción")
     else:
-        _, prog = elegir_sector_y_carrera(k, prog_inicial)
+        _, prog, _ = elegir_sector_y_carrera(k, prog_inicial)
     c2, c4, c3 = st.columns([1, 1, 1])
     regiones = ["TODAS"] + departamentos
     region = c2.selectbox("Región", regiones, index=regiones.index(region_inicial), key=f"{k}_reg",
@@ -1119,8 +1165,8 @@ if ss["pagina"] == "explorar":
     seccion("Explorar", "Toda la oferta de educación superior del Perú",
             "Busca una carrera o una institución y mira dónde está, con su web y su perfil de egreso", "explorar")
     # Primero el sector, luego la carrera; la institución es un filtro aparte y opcional
-    sector_e, carrera_e = elegir_sector_y_carrera("exp", permitir_todas=True)
-    texto = carrera_e or sector_e or ""
+    sector_e, carrera_e, grupo_e = elegir_sector_y_carrera("exp", permitir_todas=True)
+    texto = carrera_e or grupo_e or sector_e or ""
     texto_inst = st.text_input("Institución (opcional)", placeholder="San Marcos, SENATI, Monterrico...")
     e3, e4, e5 = st.columns([1, 1, 2])
     region_e = e3.selectbox("Región ", ["TODAS"] + departamentos, format_func=str.title, placeholder="Elige una opción")
@@ -1132,6 +1178,8 @@ if ss["pagina"] == "explorar":
         q = q[q["area"] == sector_e]
     if carrera_e:
         q = q[q["programa"] == carrera_e]
+    elif grupo_e:
+        q = q[q["grupo"] == grupo_e]
     if texto_inst:
         buscado = texto_inst.upper().translate(sin_t)
         q = q[q["institucion"].str.upper().str.translate(sin_t).str.contains(buscado, regex=False, na=False)]
