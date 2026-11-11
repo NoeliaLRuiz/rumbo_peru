@@ -87,10 +87,9 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 
 /* Secciones */
 /* Cada sección empieza con una franja propia, bien separada de la anterior */
-.sec {{margin: 52px 0 20px; padding: 18px 22px; scroll-margin-top: 90px; position: relative;
-      background: linear-gradient(90deg, #fffbeb 0%, #ffffff 85%); border: 1px solid #fde68a;
-      border-left: 6px solid {AMBAR}; border-radius: 16px; animation: aparecer .5s ease-out;}}
-.sec::before {{content: ""; position: absolute; left: 0; right: 0; top: -28px; border-top: 1px dashed #cbd5e1;}}
+.sec {{margin: 44px 0 22px; padding: 22px 0; scroll-margin-top: 90px; position: relative; background: #fffbeb;
+      box-shadow: 0 0 0 100vmax #fffbeb; clip-path: inset(0 -100vmax);
+      border-top: 3px solid {AMBAR}; border-bottom: 1px solid #fde68a; animation: aparecer .5s ease-out;}}
 .sec .eyebrow {{color: #b45309; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
 .sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
@@ -170,8 +169,8 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 [class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
 .stTabs [data-baseweb="tab"] {{font-weight: 600; padding: 10px 16px;}}
 /* Menú principal: barra verde oscuro, distinta de los encabezados de sección (crema) */
-.st-key-menu_principal [data-baseweb="tab-list"] {{background: {AZUL_OSCURO}; border-radius: 14px; padding: 6px;
-    gap: 6px; border-bottom: none; box-shadow: 0 6px 16px rgba(6,78,59,.18);}}
+.st-key-menu_principal [data-baseweb="tab-list"] {{background: {AZUL_OSCURO}; border-radius: 0; padding: 10px 0;
+    gap: 6px; border-bottom: none; box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax);}}
 .st-key-menu_principal [data-baseweb="tab"] {{color: #d1fae5; border-radius: 10px; padding: 10px 18px;}}
 .st-key-menu_principal [data-baseweb="tab"] p {{color: inherit; font-size: 1rem;}}
 .st-key-menu_principal [data-baseweb="tab"]:hover {{background: rgba(255,255,255,.12); color: #ffffff;}}
