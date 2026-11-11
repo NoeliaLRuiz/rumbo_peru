@@ -87,12 +87,12 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 
 /* Secciones */
 /* Cada sección empieza con una franja propia, bien separada de la anterior */
-.sec {{margin: 44px 0 22px; padding: 22px 0; scroll-margin-top: 90px; position: relative; isolation: isolate;
+.sec {{margin: 6px 0 16px; padding: 12px 0; scroll-margin-top: 90px; position: relative; isolation: isolate;
       animation: aparecer .5s ease-out;}}
 .sec::before {{content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
               background: #fffbeb; border-top: 3px solid {AMBAR}; border-bottom: 1px solid #fde68a; z-index: -1;}}
 .sec .eyebrow {{color: #b45309; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
-.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
+.sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.5rem; margin: 0; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
 /* Portada del test: franja de título, consejos y tarjetas de secciones */
 .banda {{background: linear-gradient(90deg, {AZUL_OSCURO}, {AZUL}); color: #fff; text-align: center;
@@ -168,23 +168,17 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 [class*="st-key-card"]:hover {{transform: translateY(-3px); box-shadow: 0 14px 28px rgba(5,150,105,.14);
                               border-color: #6ee7b7 !important;}}
 [class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
-.stTabs [data-baseweb="tab"] {{font-weight: 600; padding: 10px 16px;}}
-/* Menú principal: barra verde oscuro, distinta de los encabezados de sección (crema) */
-.st-key-menu_principal [data-baseweb="tab-list"] {{background: {AZUL_OSCURO}; border-radius: 0; padding: 10px 0;
-    gap: 6px; border-bottom: none; box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax);}}
-.st-key-menu_principal [data-baseweb="tab"] {{color: #d1fae5; border-radius: 10px; padding: 10px 18px;}}
-.st-key-menu_principal [data-baseweb="tab"] p {{color: inherit; font-size: 1rem;}}
-.st-key-menu_principal [data-baseweb="tab"]:hover {{background: rgba(255,255,255,.12); color: #ffffff;}}
-.st-key-menu_principal [data-baseweb="tab"][aria-selected="true"] {{background: #ffffff; color: {AZUL_OSCURO};
+/* Menú principal: franja verde oscuro de borde a borde; pestaña activa en blanco con línea ámbar */
+.stTabs [data-baseweb="tab-list"] {{background: {AZUL_OSCURO}; padding: 8px 0; gap: 6px; border-bottom: none;
+    box-shadow: 0 0 0 100vmax {AZUL_OSCURO}; clip-path: inset(0 -100vmax);}}
+.stTabs [data-baseweb="tab"] {{font-weight: 600; color: #d1fae5; border-radius: 10px; padding: 9px 18px;
+    background: transparent;}}
+.stTabs [data-baseweb="tab"] p {{color: inherit; font-size: 1rem;}}
+.stTabs [data-baseweb="tab"]:hover {{background: rgba(255,255,255,.12); color: #ffffff;}}
+.stTabs [data-baseweb="tab"][aria-selected="true"] {{background: #ffffff; color: {AZUL_OSCURO};
     box-shadow: inset 0 -4px 0 {AMBAR};}}
-.st-key-menu_principal [data-baseweb="tab-highlight"], .st-key-menu_principal [data-baseweb="tab-border"]
-    {{display: none;}}
-/* Pestañas internas (Mapa / Lista): estilo simple, sin la barra oscura */
-.st-key-vistas_explorar [data-baseweb="tab-list"] {{background: transparent; box-shadow: none; padding: 0;
-    border-bottom: 1px solid #d1fae5;}}
-.st-key-vistas_explorar [data-baseweb="tab"] {{color: {AZUL_OSCURO}; background: transparent;}}
-.st-key-vistas_explorar [data-baseweb="tab"][aria-selected="true"] {{background: {AZUL_SUAVE};
-    color: {AZUL_OSCURO}; box-shadow: inset 0 -3px 0 {AZUL};}}
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] {{display: none;}}
+.stTabs [data-baseweb="tab-panel"] {{padding-top: 0;}}
 .pie {{margin-top: 48px; padding: 18px 0; border-top: 1px solid #d1fae5; color: {GRIS}; font-size: .85rem;
       text-align: center;}}
 @keyframes aparecer {{from {{opacity: 0; transform: translateY(10px);}} to {{opacity: 1; transform: none;}}}}
@@ -375,8 +369,7 @@ programas_reales = sorted(p for p in oferta["programa"].unique() if not p.starts
 # Mapas
 # ============================================================
 METRICAS = {"Ofertas de estudio": "ofertas", "Instituciones": "instituciones", "% de oferta pública": "publica"}
-
-
+    
 @st.cache_data
 def centros_regiones() -> dict:
     """Centro y tamaño aproximado de cada región (para hacer zoom sobre ella)."""
@@ -1046,8 +1039,9 @@ with tab_explorar:
           (f"{(q['gestion'] == 'Privada').sum():,}", "ofertas privadas")], claro_desde=3)
 
     # Explorar es el buscador: dónde está cada carrera o institución (el análisis por región está en Panorama)
-    v1, v2 = st.tabs(["🗺️ Mapa", "📋 Lista"], key="vistas_explorar")
-    with v1:
+    vista = st.segmented_control("Ver resultados como", ["🗺️ Mapa", "📋 Lista"], default="🗺️ Mapa",
+                                 key="vista_explorar", required=True)
+    if vista == "🗺️ Mapa":
         sedes = q.drop_duplicates(["institucion", "lat", "lon"])
         if q.empty:
             st.info("No hay resultados con esos filtros.")
@@ -1057,7 +1051,7 @@ with tab_explorar:
             with st.container(border=True, key="mapa_exp_pts"):
                 mapa_instituciones(q, key=f"mapa_exp_{texto}_{texto_inst}_{region_e}_{gestion_e}_{len(q)}",
                                    height=520)
-    with v2:
+    else:
         st.dataframe(q[COLUMNAS_TABLA].head(1000), hide_index=True, width="stretch", column_config=CONFIG_TABLA,
                      row_height=56, height=480)
         if len(q) > 1000:
