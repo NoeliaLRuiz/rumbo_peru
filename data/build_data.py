@@ -153,6 +153,8 @@ def universidades() -> pd.DataFrame:
         "web": u["CODIGO_ENTIDAD"].map(webs_universidades()).fillna(""),
         "fuente": "SUNEDU",
         "certificacion": "Grado de Bachiller y Título Profesional (Ley Universitaria 30220)",
+        # SUNEDU otorga la licencia por 6, 8 o 10 años según la calidad demostrada (indicador de prestigio)
+        "licencia_anios": pd.to_numeric(u["PERIODO_LICENCIAMIENTO"], errors="coerce"),
         "duracion": u["DENOMINACION_PROGRAMA"].map(
             lambda p: "7 años" if normalizar(p).startswith("MEDICINA HUMANA") else "5 años aprox."),
     })

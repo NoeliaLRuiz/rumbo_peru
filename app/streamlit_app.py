@@ -121,6 +121,15 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .fila-region.actual {{background: {AZUL_SUAVE}; font-weight: 700;}}
 .dato.adm {{background: #fef3c7; border-radius: 10px; padding: 6px 10px; margin: 6px 0;}}
 .dato.adm small {{color: {GRIS};}}
+.sello {{display: inline-block; background: #fef3c7; color: {AMBAR_OSCURO}; border: 1px solid #fcd34d;
+          padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; margin: 0 4px 4px 0;}}
+.destacadas {{background: linear-gradient(90deg, {AZUL_SUAVE}, #ffffff); border: 2px solid {AZUL};
+             border-radius: 16px; padding: 14px 18px; margin: 4px 0 16px;}}
+.destacadas .tit {{font-weight: 800; font-size: 1.15rem; color: {AZUL_OSCURO};}}
+.destacadas .sub {{color: {GRIS}; font-size: .88rem; margin-bottom: 10px;}}
+.destacadas .lista {{display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;}}
+.destacadas .op {{display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d1fae5;
+                 border-radius: 12px; padding: 10px;}}
 .inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
@@ -178,7 +187,34 @@ def kpis(items: list[tuple[str, str]], claro_desde: int = 99):
 
 
 def pill_gestion(g: str) -> str:
-    return f'<span class="pill {"pub" if g == "Pública" else "pri"}">{g}</span>'
+    texto = "Pública · gratuita o de bajo costo" if g == "Pública" else "Privada"
+    return f'<span class="pill {"pub" if g == "Pública" else "pri"}">{texto}</span>'
+
+
+def sello(r) -> str:
+    """Sello de prestigio basado en datos oficiales (no en opiniones)."""
+    anios = getattr(r, "licencia_anios", None)
+    if r.tipo == "Universidad" and pd.notna(anios):
+        nivel = {10: "la licencia máxima", 8: "licencia de 8 años", 6: "licencia de 6 años"}.get(int(anios), "")
+        estrellas = {10: "★★★", 8: "★★", 6: "★"}.get(int(anios), "")
+        return (f"<span class='sello' title='SUNEDU otorga la licencia por 6, 8 o 10 años según la calidad "
+                f"demostrada. 10 años es la máxima.'>🏅 Licencia SUNEDU {int(anios)} años {estrellas}</span>"
+                if nivel else "")
+    if "Ley 30512" in str(r.certificacion) or str(r.tipo).startswith("Escuela superior"):
+        return "<span class='sello' title='Las escuelas de educación superior de la Ley 30512 están licenciadas por el MINEDU'>🏅 Escuela de Educación Superior licenciada</span>"
+    if "rango universitario" in str(r.certificacion):
+        return "<span class='sello'>🏅 Escuela nacional con rango universitario</span>"
+    return ""
+
+
+def orden_prestigio(df: pd.DataFrame) -> pd.DataFrame:
+    """Públicas primero; dentro de cada grupo, más años de licencia primero."""
+    lic = df["licencia_anios"] if "licencia_anios" in df else pd.Series(0, index=df.index)
+    return (df.assign(_pub=df["gestion"] != "Pública", _lic=-lic.fillna(0))
+              .sort_values(["_pub", "_lic", "tipo", "institucion"]).drop(columns=["_pub", "_lic"]))
+
+
+SINEACE = "https://app.sineace.gob.pe/buscador/acreditacion.aspx"
 
 
 LEYENDA = (f'<div class="leyenda"><i style="background:{COLOR_GESTION["Pública"]}"></i>Pública'
@@ -502,13 +538,12 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
         sub = sub[sub["departamento"] == region]
     if gestion != "Ambas":
         sub = sub[sub["gestion"] == gestion]
-    sub = sub.drop_duplicates(["institucion", "tipo", "programa", "distrito"])
+    sub = orden_prestigio(sub.drop_duplicates(["institucion", "tipo", "programa", "distrito"]))
     if sub.empty:
         st.info("No hay instituciones con esta carrera y filtros. Prueba con otra región o con «Ambas».")
         return
     # Por defecto: una de cada combinación tipo × gestión (universidad pública, instituto privado, ...)
-    por_defecto = list(sub.groupby(["tipo", "gestion"], sort=False).head(1)
-                       .sort_values("tipo", key=lambda t: t != "Universidad").index)[:4]
+    por_defecto = list(sub.groupby(["tipo", "gestion"], sort=False).head(1).index)[:4]
     elegidas = st.multiselect(
         "Instituciones a comparar (hasta 4)", list(sub.index), default=por_defecto, max_selections=4,
         key=f"{k}_inst_{prog}_{region}_{gestion}_{equivalentes}",  # se reinicia al cambiar la carrera o la región
@@ -524,7 +559,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
             st.markdown(f"<div style='margin-bottom:8px'>{logo_html(r, 40, 120)}</div>"
                         f"<div class='inst-nombre'>{r.institucion}</div>"
                         f"<div style='color:{GRIS};font-size:.9rem;margin-bottom:6px'>{r.programa.title()}</div>"
-                        f"{pill_gestion(r.gestion)}<span class='pill tipo'>{r.tipo}</span>"
+                        f"{pill_gestion(r.gestion)}<span class='pill tipo'>{r.tipo}</span>{sello(r)}"
                         f"<div class='dato'><b>Al egresar:</b> {r.certificacion}</div>"
                         f"<div class='dato'><b>Duración:</b> {r.duracion}</div>"
                         f"<div class='dato'><b>Costo:</b> "
@@ -549,6 +584,8 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 
     izq = st.container()
     with izq:
+        st.caption(f"🏅 Los sellos se basan en datos oficiales: años de licencia SUNEDU y licenciamiento MINEDU. "
+                   f"¿Quieres saber si una carrera está acreditada? Revísalo en el [buscador de SINEACE]({SINEACE}).")
         st.markdown("##### Perfil de egreso referencial")
         # Un perfil por cada combinación carrera + nivel elegida (p. ej. Enfermería universitaria vs. técnica)
         pares = list(dict.fromkeys((sub.at[i, "programa"], nivel_de(sub.at[i, "tipo"]), sub.at[i, "area"])
@@ -783,6 +820,14 @@ with tab_test:
                   (f"{int((sel['gestion'] == 'Pública').sum()):,}", "en instituciones públicas"),
                   (f"{int((sel['gestion'] == 'Privada').sum()):,}", "en instituciones privadas"),
                   (f"{int(sel['web'].notna().sum()):,}", "con web oficial")], claro_desde=2)
+            publicas = orden_prestigio(sel[sel["gestion"] == "Pública"]).drop_duplicates("institucion").head(3)
+            if not publicas.empty:
+                st.markdown("<div class='destacadas'><div class='tit'>🏛️ Opciones públicas cerca de ti</div>"
+                            "<div class='sub'>Educación gratuita o de bajo costo, ordenadas por prestigio oficial</div>"
+                            "<div class='lista'>" + "".join(
+                                f"<div class='op'>{logo_html(r, 34, 90)}<div><b>{r.institucion}</b><br>"
+                                f"<small>{r.distrito.title()} · {r.tipo}</small><br>{sello(r)}</div></div>"
+                                for r in publicas.itertuples()) + "</div></div>", unsafe_allow_html=True)
             izq, der = st.columns([3, 2], gap="large")
             with izq, st.container(border=True, key="mapa_donde"):
                 st.markdown(f"**Mapa de instituciones · {region.title()}**")
@@ -802,7 +847,7 @@ with tab_test:
                     f"<span class='num'>{n}</span></div>" for dep, n in por_region.items()),
                     unsafe_allow_html=True)
             if not sel.empty:
-                tabla = sel[COLUMNAS_TABLA].sort_values(["gestion", "tipo", "institucion"])
+                tabla = orden_prestigio(sel)[COLUMNAS_TABLA]
                 tabla["programa"] = tabla["programa"].str.title()
                 st.dataframe(tabla, hide_index=True, width="stretch", column_config=CONFIG_TABLA, row_height=56,
                              height=320)
@@ -815,7 +860,7 @@ with tab_test:
         # 06 Reporte
         else:
             prog, region, gestion, _, _, sel = filtro_donde()
-            tabla_rep = sel.sort_values(["gestion", "tipo", "institucion"]).head(30)
+            tabla_rep = orden_prestigio(sel).head(30)
             reporte = (f"# Reporte vocacional - Rumbo\n\nPerfil: {codigo_holland(punt)}\n\n{rec['perfil']}\n\n"
                        "## Carreras sugeridas\n" + "\n".join(f"- {c['programa'].title()} ({c['nivel']})"
                                                              for c in carreras)
