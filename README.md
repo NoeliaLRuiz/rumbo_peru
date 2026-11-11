@@ -122,6 +122,8 @@ Construí Rumbo con **Claude Code** como co-founder técnico:
 - **Lo público primero:** en todas las listas y en el comparador, y con un recuadro de opciones públicas en "Dónde estudiar". Las acreditaciones de SINEACE no están en datos abiertos, así que enlazamos su buscador oficial.
 
 ### Datos y limitaciones
+- **Excluimos 9 programas de formación continua** (titulación, segunda titulación y complementación académica o pedagógica), porque son para quienes ya tienen estudios o un título, no para estudiantes que salen del colegio.
+- **Las carreras de educación se agrupan por nivel** (Inicial, Primaria, Secundaria) aunque se llamen distinto: por ejemplo, "Ciencias de la Educación, Nivel Primaria" cuenta como Educación Primaria, y las especialidades por materia como Educación Secundaria.
 - **Fuentes:** SUNEDU, Programas de universidades licenciadas (corte de agosto de 2024), y MINEDU ESCALE, Censo Educativo 2025 (padrón y cuadro de carreras).
 - Los institutos pedagógicos no reportan sus especialidades en ese cuadro, así que aparecen como «Formación docente».
 - La clasificación por áreas es por palabras clave, por lo que hay casos dudosos.

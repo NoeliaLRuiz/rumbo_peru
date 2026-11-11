@@ -329,6 +329,26 @@ def base_grupo(programa: str) -> str:
     return " ".join(palabras) or str(programa)
 
 
+def grupo_educacion(programa: str) -> str | None:
+    """Carreras de educación: se agrupan por nivel aunque se llamen distinto.
+    'CIENCIAS DE LA EDUCACIÓN, NIVEL PRIMARIA' -> 'Educación Primaria';
+    'CIENCIAS DE LA EDUCACIÓN EN LENGUA Y LITERATURA' -> 'Educación Secundaria' (las especialidades por
+    materia son del nivel secundario)."""
+    n = normalizar(programa)
+    if "EDUCACION" not in n:
+        return None
+    for nivel in ("INICIAL", "PRIMARIA", "SECUNDARIA"):
+        if nivel in n:
+            return f"Educación {nivel.capitalize()}"
+    if n.startswith("CIENCIAS DE LA EDUCACION"):
+        if "FISICA" in n:
+            return "Educación Física"
+        if "ARTISTICA" in n:
+            return "Educación Artística"
+        return "Educación Secundaria"
+    return None
+
+
 @st.cache_data
 def cargar_oferta(version: float) -> pd.DataFrame:
     """`version` = fecha de modificación del CSV: si se regeneran los datos, la caché se renueva sola."""
@@ -347,6 +367,8 @@ def cargar_oferta(version: float) -> pd.DataFrame:
     clave = base.map(normalizar)
     nombre_mas_comun = base.groupby(clave).agg(lambda b: b.value_counts().index[0])
     df["grupo"] = clave.map(nombre_mas_comun).map(nombre_bonito)
+    por_nivel = df["programa"].map(grupo_educacion)
+    df["grupo"] = por_nivel.fillna(df["grupo"])
     df["perfil_link"] = [enlace_perfil(n, p, w) for n, p, w in zip(df["institucion"], df["programa"], df["web"])]
     df["admision_link"] = [enlace_admision(n, w) for n, w in zip(df["institucion"], df["web"])]
     logos_web = df["logo_web"] if "logo_web" in df else pd.Series(None, index=df.index)

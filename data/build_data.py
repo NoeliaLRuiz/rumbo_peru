@@ -7,6 +7,7 @@ Fuentes (datos abiertos, sin datos personales):
 
 Uso:  python data/build_data.py
 """
+import re
 import sys
 import zipfile
 from pathlib import Path
@@ -249,11 +250,24 @@ def programas_manuales(oferta: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([oferta[~oferta["codigo"].isin(codigos)], pd.DataFrame(nuevas)], ignore_index=True)
 
 
+# Programas de formación continua: son para quienes ya estudiaron o tienen un título (titulación,
+# complementación, profesionalización docente), no para estudiantes que salen del colegio.
+FORMACION_CONTINUA = re.compile(r"TITULACION|COMPLEMENTACION|PROFESIONALIZACION|MODALIDAD DE EGRESADOS|"
+                                r"SEGUNDA ESPECIALIDAD|PARA PROFESIONALES|CONVALIDACION")
+
+
+def sin_formacion_continua(oferta: pd.DataFrame) -> pd.DataFrame:
+    es_continua = oferta["programa"].map(lambda prog: bool(FORMACION_CONTINUA.search(normalizar(prog))))
+    print(f"Excluidos {int(es_continua.sum())} programas de formación continua (titulación, complementación…)")
+    return oferta[~es_continua]
+
+
 def main():
     descargar()
     oferta = pd.concat([universidades(), institutos(), instituciones_extra()], ignore_index=True)
     oferta = programas_manuales(oferta)
     oferta["programa"] = oferta["programa"].str.upper()
+    oferta = sin_formacion_continua(oferta)
     oferta["area"] = [clasificar(p, f) for p, f in zip(oferta["programa"], oferta["familia"])]
     # SUNEDU escribe 'JUNÍN' y MINEDU 'JUNIN': sin tildes para que coincidan entre sí y con el mapa
     for col in ["departamento", "provincia"]:
