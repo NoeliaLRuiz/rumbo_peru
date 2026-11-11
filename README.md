@@ -106,8 +106,9 @@ Construí Rumbo con **Claude Code** como co-founder técnico:
 ---
 
 ### Sobre el test vocacional
-- Se basa en el **modelo RIASEC de Holland**: 6 tipos de interés y 24 preguntas en **4 secciones temáticas** (actividades, lugares de trabajo, temas y otras actividades), con una pregunta de cada tipo por sección, en `ai/test_vocacional.py`. Las palabras poco conocidas tienen una ayuda ⓘ.
-- Las preguntas son **de redacción propia** y siguen el formato de los marcadores RIASEC de dominio público (AFPD; Armstrong y otros, 2008), validados en español por [Cupani y otros (2019)](https://core.ac.uk/download/343669628.pdf). Cada pregunta tiene una sola actividad, mide un solo tipo de interés y es posible en cualquier región, sin suponer acceso a computadora. **No son una traducción del instrumento AFPD.**
+- Se basa en el **modelo RIASEC de Holland**: **36 afirmaciones, 6 por cada tipo de interés** (Realista, Investigativa, Artística, Social, Emprendedora y Convencional), en `ai/test_vocacional.py`.
+- Las afirmaciones fueron **elaboradas por la founder**. Se responden con una escala de **1 (no me interesa) a 5 (me interesa mucho)**, según el interés y no según la habilidad.
+- Para responder, se muestran en **6 partes de 6 afirmaciones**, cada parte con una de cada tipo. Así ningún bloque revela qué se mide y el cansancio se reparte por igual. El puntaje de cada tipo es el promedio de sus 6 respuestas, llevado a una escala de 0 a 100.
 - **Próximo paso:** validar el test con respuestas reales (consistencia por tipo de interés, alfa de Cronbach).
 
 ### Correcciones manuales (transparentes)

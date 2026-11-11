@@ -17,11 +17,16 @@ from streamlit_folium import st_folium
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
+# Streamlit reutiliza los módulos importados entre ejecuciones: si se actualiza ai/ (p. ej. en Streamlit Cloud),
+# el servidor seguiría con la versión vieja y fallaría la importación. Los volvemos a cargar siempre.
+for _modulo in [m for m in list(sys.modules) if m == "ai" or m.startswith("ai.")]:
+    del sys.modules[_modulo]
 from ai.areas import AREAS, icono_area, nombre_area, normalizar  # noqa: E402
 from ai.orientador import _nivel as nivel_de  # noqa: E402
 from ai.orientador import recomendar  # noqa: E402
 from ai.perfil_egreso import perfil_egreso  # noqa: E402
-from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, OPCIONES, POR_SECCION, PREGUNTAS,  # noqa: E402
+from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, INSTRUCCIONES, OPCIONES, POR_SECCION,  # noqa: E402
+                                PREGUNTAS,
                                 SECCIONES_TEST,
                                 codigo_holland, puntajes, ranking_areas)
 
@@ -49,7 +54,7 @@ COLOR_GESTION = {"Pública": AZUL, "Privada": AMBAR}  # opción 1: azul + ámbar
 # Mapa por regiones: de turquesa claro a azul marino
 ESCALA_AZUL = [[0, "#f0fdf4"], [0.15, "#d1fae5"], [0.32, "#a7f3d0"], [0.5, "#6ee7b7"], [0.66, "#34d399"],
                [0.82, "#059669"], [1, "#064e3b"]]
-N_PASOS = 4  # bloques de preguntas: 6 preguntas por bloque, una de cada tipo de interés
+N_PASOS = 6  # partes del test: 6 afirmaciones por parte, una de cada tipo de interés
 
 st.markdown(f"""
 <style>
@@ -710,7 +715,7 @@ with tab_test:
         st.markdown('<div class="banda">Test de intereses vocacionales</div>', unsafe_allow_html=True)
         izq, der = st.columns([1, 2.2], gap="large")
         with izq:
-            consejos = [(ICONOS_TIPS["reloj"], "Dura unos <b>5 minutos</b>."),
+            consejos = [(ICONOS_TIPS["reloj"], "Dura unos <b>8 minutos</b>."),
                         (ICONOS_TIPS["sinceridad"], "Responde con sinceridad. Así tus resultados serán confiables."),
                         (ICONOS_TIPS["privacidad"], "No guardamos tus respuestas ni tus datos personales."),
                         (ICONOS_TIPS["ubicacion"],
@@ -750,14 +755,13 @@ with tab_test:
             for n, (t, ico, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>", unsafe_allow_html=True)
         st.progress(paso / N_PASOS, text=f"Sección {paso} de {N_PASOS}")
         st.markdown(f"<div class='pregunta-sec'>{ico_sec} {titulo_sec}</div>"
-                    "<div class='nota'>Marca cuánto te gustaría, aunque nunca lo hayas hecho. "
-                    "No hay respuestas buenas ni malas.</div>", unsafe_allow_html=True)
+                    f"<div class='nota'>{INSTRUCCIONES} No hay respuestas buenas ni malas.</div>",
+                    unsafe_allow_html=True)
         indices = list(range((paso - 1) * POR_SECCION, paso * POR_SECCION))
-        cols = st.columns(2)
-        for n, i in enumerate(indices):
-            with cols[n % 2], st.container(border=True, key=f"card_q{i}"):
+        for i in indices:
+            with st.container(border=True, key=f"card_q{i}"):
                 actual = ss["resp"][i]
-                valor = st.radio(f"**{PREGUNTAS[i][1]}**", list(OPCIONES), format_func=OPCIONES.get,
+                valor = st.radio(f"**{i + 1}. {PREGUNTAS[i][1]}**", list(OPCIONES), format_func=OPCIONES.get,
                                  horizontal=True, index=list(OPCIONES).index(actual) if actual else None,
                                  key=f"w{i}", help=AYUDAS[i] or None)
                 ss["resp"][i] = valor
@@ -1084,7 +1088,7 @@ with tab_comparar:
 # ============================================================
 with tab_colegios:
     seccion(1, "Cómo funciona", "De la duda a un plan concreto en una clase de tutoría", "como")
-    pasos = [("🧭", "El estudiante hace el test", "24 preguntas en 4 secciones, desde el celular o la sala de cómputo."),
+    pasos = [("🧭", "El estudiante hace el test", "36 afirmaciones en 6 partes, desde el celular o la sala de cómputo."),
              ("🤖", "La IA interpreta su perfil", "Explica sus intereses y sugiere carreras reales del Perú."),
              ("🗺️", "Ve dónde estudiar", "Mapa con instituciones públicas y privadas de su región y su web."),
              ("📄", "El tutor recibe el reporte", "Para conversar con el estudiante y su familia.")]
@@ -1117,10 +1121,10 @@ with tab_colegios:
 
     seccion(4, "Sobre el test", "Cómo se construyeron las preguntas", "sobre_test")
     st.markdown("- Se basa en el **modelo RIASEC de John Holland**: seis tipos de interés (Realista, Investigador, "
-                "Artístico, Social, Emprendedor y Convencional). Son **24 preguntas en 4 secciones** (actividades, lugares de trabajo, temas y otras actividades), con una pregunta de cada tipo por sección.\n"
-                "- Las preguntas son de redacción propia y siguen el formato de los **marcadores RIASEC de dominio "
-                "público (AFPD)**, validados en español por Cupani y otros (2019): **una sola actividad por "
-                "pregunta**, cada una de un solo tipo y posible en la costa, la sierra o la selva.\n"
+                "Artístico, Social, Emprendedor y Convencional). Son **36 afirmaciones (6 por tipo)** que se responden con "
+                "una escala de 1 (no me interesa) a 5 (me interesa mucho), en 6 partes con una afirmación de cada tipo.\n"
+                "- Las afirmaciones fueron **elaboradas por la founder** a partir del modelo RIASEC: cada una describe "
+                "una actividad de un solo tipo de interés, y se responde según el interés, no según la habilidad.\n"
                 "- **Es una herramienta de orientación, no un diagnóstico.** Conviene conversar el resultado con "
                 "un tutor o psicólogo.")
 

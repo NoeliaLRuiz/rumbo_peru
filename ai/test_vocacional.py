@@ -1,85 +1,102 @@
 """Test de intereses basado en el modelo RIASEC de John Holland.
 
-24 preguntas en 4 secciones temáticas (actividades, lugares de trabajo, temas y otras actividades).
-Cada sección tiene 6 preguntas, una por tipo de interés, así el puntaje queda balanceado.
+36 afirmaciones, 6 por cada tipo de interés (Realista, Investigativa, Artística, Social, Emprendedora
+y Convencional), redactadas por la founder. Se responden con una escala de 1 (no me interesa) a 5
+(me interesa mucho).
 
-Las preguntas son de redacción propia. Siguen el formato de los marcadores RIASEC de dominio público
-(AFPD; Armstrong y otros, 2008), validados en español por Cupani y otros (2019):
-  - una sola actividad, lugar o tema concreto por pregunta,
-  - cada pregunta mide un solo tipo de interés,
-  - posibles en la costa, la sierra y la selva (sin suponer computadora ni redes sociales),
-  - respuesta de agrado de 1 (no me gusta) a 4 (me encanta).
-No son una traducción del instrumento AFPD: para medir con un test validado, usar sus ítems en español.
+Para responder, se presentan en 6 partes de 6 afirmaciones; cada parte tiene una afirmación de cada
+tipo, así ningún bloque revela qué se está midiendo y el cansancio se reparte por igual.
 """
 from ai.areas import AREAS
 
+INSTRUCCIONES = ("Lee cada afirmación y señala qué tanto te interesaría realizar esa actividad, "
+                 "independientemente de si consideras que tienes habilidad para hacerla.")
+
 DIMENSIONES = {
-    "R": ("Realista", "Te gusta trabajar con las manos, herramientas, máquinas, plantas o animales."),
-    "I": ("Investigador", "Te gusta entender cómo funcionan las cosas, analizar y resolver problemas."),
-    "A": ("Artístico", "Te gusta crear, expresarte y trabajar con ideas originales."),
-    "S": ("Social", "Te gusta ayudar, enseñar y cuidar a otras personas."),
-    "E": ("Emprendedor", "Te gusta liderar, convencer, vender y tomar decisiones."),
-    "C": ("Convencional", "Te gusta el orden, los datos, los números y seguir procesos claros."),
+    "R": ("Realista", "Te interesan las actividades prácticas, técnicas y de construcción."),
+    "I": ("Investigativa", "Te interesa investigar, analizar y resolver problemas."),
+    "A": ("Artística", "Te interesa crear, diseñar y expresar ideas."),
+    "S": ("Social", "Te interesa ayudar, enseñar y trabajar con personas."),
+    "E": ("Emprendedora", "Te interesa liderar, organizar iniciativas y desarrollar proyectos."),
+    "C": ("Convencional", "Te interesa organizar, registrar y administrar información."),
 }
 
-# (título de la sección, ícono, [(tipo, pregunta, ayuda para palabras poco conocidas)])
+# Afirmaciones por dimensión, en el orden del instrumento original (1-36)
+AFIRMACIONES = {
+    "R": ["Me gustaría construir o ensamblar objetos utilizando herramientas y materiales.",
+          "Disfrutaría realizar actividades que impliquen reparar máquinas o equipos.",
+          "Me interesaría participar en proyectos de construcción de viviendas o espacios.",
+          "Me gustaría aprender a manejar equipos tecnológicos o maquinaria especializada.",
+          "Disfrutaría realizar experimentos prácticos para comprobar cómo funciona un objeto.",
+          "Me interesaría trabajar en actividades que requieran manipular materiales y obtener resultados concretos."],
+    "I": ["Me gustaría investigar por qué ocurren determinados fenómenos naturales.",
+          "Disfrutaría resolver problemas matemáticos o científicos que representen un desafío.",
+          "Me interesaría analizar información para encontrar explicaciones o conclusiones.",
+          "Me gustaría realizar investigaciones sobre el funcionamiento del cuerpo humano.",
+          "Disfrutaría utilizar datos y evidencias para comprobar si una idea es correcta.",
+          "Me interesaría aprender cómo se desarrollan nuevos conocimientos científicos o tecnológicos."],
+    "A": ["Me gustaría diseñar espacios, edificios u objetos que tengan una apariencia original.",
+          "Disfrutaría crear ilustraciones, fotografías, videos u otras producciones visuales.",
+          "Me interesaría desarrollar propuestas creativas para solucionar problemas cotidianos.",
+          "Me gustaría participar en proyectos relacionados con la música, el teatro o las artes visuales.",
+          "Disfrutaría combinar colores, formas y materiales para crear composiciones.",
+          "Me interesaría desarrollar ideas propias y transformarlas en proyectos creativos."],
+    "S": ["Me gustaría orientar a otras personas cuando tengan dificultades para aprender.",
+          "Disfrutaría participar en actividades que contribuyan al bienestar de mi comunidad.",
+          "Me interesaría escuchar y ayudar a personas que atraviesan situaciones difíciles.",
+          "Me gustaría explicar temas que conozco para facilitar el aprendizaje de otros.",
+          "Disfrutaría trabajar en equipo para alcanzar objetivos compartidos.",
+          "Me interesaría participar en proyectos relacionados con la salud y el bienestar de las personas."],
+    "E": ["Me gustaría dirigir un equipo para desarrollar un proyecto.",
+          "Disfrutaría presentar mis ideas y convencer a otras personas sobre su importancia.",
+          "Me interesaría crear un negocio o desarrollar un emprendimiento propio.",
+          "Me gustaría organizar actividades y coordinar responsabilidades entre varias personas.",
+          "Disfrutaría negociar y buscar acuerdos para resolver diferentes situaciones.",
+          "Me interesaría asumir responsabilidades en proyectos donde sea necesario tomar decisiones."],
+    "C": ["Me gustaría organizar documentos y mantener información clasificada.",
+          "Disfrutaría trabajar con tablas, registros y bases de datos.",
+          "Me interesaría revisar información para detectar errores o inconsistencias.",
+          "Me gustaría llevar el control de presupuestos, gastos o recursos de un proyecto.",
+          "Disfrutaría planificar actividades siguiendo procedimientos y pasos establecidos.",
+          "Me interesaría utilizar herramientas digitales para organizar información y realizar tareas administrativas."],
+}
+
+ORDEN = ["R", "I", "A", "S", "E", "C"]
+ICONOS_PARTE = ["🔧", "🔬", "🎨", "🤝", "🚀", "📋"]
+
+# 6 partes: la parte k tiene la afirmación k de cada dimensión
 SECCIONES_TEST = [
-    ("¿Te gustaría hacer estas actividades?", "🛠️", [
-        ("R", "Reparar cosas que se malogran en casa", ""),
-        ("I", "Hacer experimentos para descubrir por qué pasa algo", ""),
-        ("A", "Dibujar o pintar", ""),
-        ("S", "Explicarle un tema a un compañero que no lo entiende", ""),
-        ("E", "Vender un producto o un servicio", ""),
-        ("C", "Llevar las cuentas del dinero de un negocio o de tu casa", ""),
-    ]),
-    ("¿Te gustaría trabajar en estos lugares?", "🏢", [
-        ("R", "Un taller de mecánica o de carpintería", "Lugar donde se reparan o fabrican objetos, vehículos o muebles."),
-        ("I", "Un laboratorio de investigación", "Lugar donde se hacen pruebas y análisis para descubrir cosas nuevas."),
-        ("A", "Un estudio de diseño o de grabación", "Lugar donde se crean afiches, videos, música o diseños."),
-        ("S", "Un centro de salud o una escuela", ""),
-        ("E", "Tu propia empresa", "Un negocio que tú diriges y en el que tomas las decisiones."),
-        ("C", "Una oficina de contabilidad o un banco", "Lugares donde se registra y controla el dinero."),
-    ]),
-    ("¿Te gustaría aprender sobre estos temas?", "📚", [
-        ("R", "Cómo funcionan los motores y las máquinas", ""),
-        ("I", "Cómo funciona el cuerpo humano", ""),
-        ("A", "El arte, la música o el teatro", ""),
-        ("S", "Cómo aprenden y se sienten las personas", "Es lo que estudian la psicología y la educación."),
-        ("E", "Cómo crear y hacer crecer un negocio", ""),
-        ("C", "Cómo organizar información de forma ordenada", "Por ejemplo, archivos, registros o bases de datos."),
-    ]),
-    ("¿Te gustaría hacer estas otras actividades?", "✨", [
-        ("R", "Trabajar en el campo con plantas o animales", ""),
-        ("I", "Resolver problemas difíciles de matemática", ""),
-        ("A", "Presentarte en un escenario: actuar, bailar o tocar música", ""),
-        ("S", "Cuidar a una persona enferma o mayor", ""),
-        ("E", "Dirigir un grupo como delegado o líder", ""),
-        ("C", "Revisar un trabajo con cuidado para encontrar errores", ""),
-    ]),
+    (f"Parte {k + 1} · afirmaciones {6 * k + 1} a {6 * k + 6}", ICONOS_PARTE[k],
+     [(d, AFIRMACIONES[d][k], "") for d in ORDEN])
+    for k in range(6)
 ]
 
-# Lista plana de preguntas en orden: sección 1, sección 2, ... (6 por sección)
+# Lista plana de preguntas en el orden en que se muestran (6 por parte)
 PREGUNTAS = [(dim, texto) for _, _, items in SECCIONES_TEST for dim, texto, _ in items]
 AYUDAS = [ayuda for _, _, items in SECCIONES_TEST for _, _, ayuda in items]
 POR_SECCION = 6
 
-OPCIONES = {1: "No me gusta", 2: "Me da igual", 3: "Me gusta", 4: "Me encanta"}
+OPCIONES = {1: "1 · No me interesa", 2: "2 · Me interesa poco", 3: "3 · Me interesa moderadamente",
+            4: "4 · Me interesa bastante", 5: "5 · Me interesa mucho"}
+ESCALA_MAX = max(OPCIONES)
 
-# Respuestas de ejemplo para la demo: estudiante con perfil Social-Investigador (orden R, I, A, S, E, C)
-EJEMPLO = [2, 4, 2, 4, 2, 3,
-           1, 4, 2, 4, 2, 3,
-           2, 4, 1, 4, 2, 3,
-           1, 3, 1, 4, 3, 2]
+# Respuestas de ejemplo para la demo: estudiante con perfil Social-Investigativo (orden R, I, A, S, E, C)
+EJEMPLO = [2, 5, 2, 5, 2, 3,
+           1, 4, 2, 5, 3, 3,
+           2, 5, 1, 4, 2, 4,
+           1, 4, 2, 5, 2, 3,
+           2, 4, 1, 5, 3, 3,
+           1, 5, 2, 4, 2, 4]
 
 
 def puntajes(respuestas: list[int]) -> dict[str, float]:
-    """Promedio por dimensión, escalado a 0-100."""
+    """Promedio por dimensión, escalado a 0-100 (1 = 0 y 5 = 100)."""
     suma = {d: 0 for d in DIMENSIONES}
     cuenta = {d: 0 for d in DIMENSIONES}
     for (dim, _), r in zip(PREGUNTAS, respuestas):
         suma[dim] += r
         cuenta[dim] += 1
-    return {d: round((suma[d] / cuenta[d] - 1) / 3 * 100, 1) for d in DIMENSIONES}
+    return {d: round((suma[d] / cuenta[d] - 1) / (ESCALA_MAX - 1) * 100, 1) for d in DIMENSIONES}
 
 
 def codigo_holland(p: dict[str, float]) -> str:
