@@ -25,7 +25,10 @@ from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, OPCIONES, POR_SECC
                                 SECCIONES_TEST,
                                 codigo_holland, puntajes, ranking_areas)
 
-st.set_page_config(page_title="Rumbo · Orientación vocacional", page_icon="🧭", layout="wide")
+LOGO_SVG = (Path(__file__).resolve().parent / "logo_rumbo.svg").read_text(encoding="utf-8")
+LOGO_URI = "data:image/svg+xml;base64," + base64.b64encode(LOGO_SVG.encode()).decode()
+st.set_page_config(page_title="Rumbo · Orientación vocacional",
+                   page_icon=str(Path(__file__).resolve().parent / "logo_rumbo.svg"), layout="wide")
 # La página está en español: así el navegador no ofrece "traducirla" (eso cambiaba "o a la" por "oa la")
 st.html("<script>document.documentElement.lang = 'es';"
         "if (!document.querySelector('meta[name=google]')) {const m = document.createElement('meta');"
@@ -57,10 +60,13 @@ st.markdown(f"""
         padding: 26px 34px 30px; margin-bottom: 8px; box-shadow: 0 18px 40px rgba(30,58,138,.25);
         animation: aparecer .6s ease-out;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
-.hero .marca {{font-weight: 800; font-size: 1.25rem; letter-spacing: .02em;}}
+.hero .marca {{display: flex; align-items: center; gap: 14px;}}
+.hero .marca img {{width: 74px; height: 74px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));}}
+.hero .marca .nombre {{font-size: 3.6rem; font-weight: 800; letter-spacing: .01em; line-height: 1;}}
+.hero .marca .lema {{font-size: .95rem; opacity: .9; font-weight: 500; letter-spacing: .04em; margin-top: 4px;}}
 .hero .chip {{background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); border-radius: 999px;
              padding: 4px 12px; font-size: .78rem; margin-left: 6px;}}
-.hero h1 {{color: #fff; font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin: 22px 0 8px;}}
+.hero h1 {{color: #fff; font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin: 22px 0 8px;}}
 .hero p.sub {{font-size: 1.08rem; opacity: .92; max-width: 760px; margin: 0;}}
 .hero .stats {{display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 22px;}}
 .hero .stat {{background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 14px;
@@ -522,11 +528,11 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 st.markdown(f"""
 <div class="hero">
   <div class="top">
-    <div class="marca">🧭 Rumbo</div>
-    <div><span class="chip">Datos SUNEDU</span><span class="chip">Censo Educativo MINEDU 2025</span>
-         <span class="chip">IA con Claude</span></div>
+    <div class="marca"><img src="{LOGO_URI}" alt="Logo de Rumbo">
+      <div><div class="nombre">Rumbo</div><div class="lema">ORIENTACIÓN VOCACIONAL · PERÚ</div></div></div>
+    <div><span class="chip">Datos SUNEDU</span><span class="chip">Censo Educativo MINEDU 2025</span></div>
   </div>
-  <h1>Encuentra qué estudiar<br>y dónde, cerca de casa</h1>
+  <h1>Encuentra qué estudiar y dónde, cerca de casa</h1>
   <p class="sub">Test vocacional gratuito que te muestra todas tus opciones reales en el Perú: universidades,
      institutos, escuelas superiores, pedagógicos y CETPRO, públicos y privados.</p>
   <div class="stats">
@@ -538,7 +544,9 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("### 🧭 Rumbo")
+    st.markdown(f"<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px'>"
+                f"<img src='{LOGO_URI}' width='44'><span style='font-size:1.9rem;font-weight:800;"
+                f"color:{AZUL_OSCURO}'>Rumbo</span></div>", unsafe_allow_html=True)
     st.write("Orientación vocacional con datos abiertos de **SUNEDU** y del **Censo Educativo 2025 del MINEDU**.")
     st.caption("No guardamos tus respuestas ni datos personales.")
     st.button("Reiniciar test", on_click=reiniciar, width="stretch")
@@ -665,7 +673,7 @@ with tab_test:
                 st.markdown("".join(f"<span class='pill tipo'>{f}</span>" for f in rec["fortalezas"]),
                             unsafe_allow_html=True)
                 st.info("**Siguiente paso:** " + rec["siguiente_paso"])
-                st.caption("Recomendación generada con IA (Claude) y validada contra los datos oficiales."
+                st.caption("Recomendación generada con IA y validada contra los datos oficiales."
                            if rec.get("fuente") == "ia" else "Recomendación generada con reglas del modelo RIASEC.")
             with der, st.container(border=True, key="card_radar"):
                 etiquetas = [DIMENSIONES[d][0] for d in punt] + [DIMENSIONES[next(iter(punt))][0]]
@@ -927,7 +935,7 @@ with tab_comparar:
 with tab_colegios:
     seccion(1, "Cómo funciona", "De la duda a un plan concreto en una clase de tutoría", "como")
     pasos = [("🧭", "El estudiante hace el test", "24 preguntas en 4 secciones, desde el celular o la sala de cómputo."),
-             ("🤖", "La IA interpreta su perfil", "Claude explica sus intereses y sugiere carreras reales del Perú."),
+             ("🤖", "La IA interpreta su perfil", "Explica sus intereses y sugiere carreras reales del Perú."),
              ("🗺️", "Ve dónde estudiar", "Mapa con instituciones públicas y privadas de su región y su web."),
              ("📄", "El tutor recibe el reporte", "Para conversar con el estudiante y su familia.")]
     for col, (ic, tit, txt) in zip(st.columns(4), pasos):
