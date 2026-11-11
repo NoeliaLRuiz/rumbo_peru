@@ -172,20 +172,21 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
                               border-color: #6ee7b7 !important;}}
 [class*="st-key-mapa"] {{border-radius: 16px !important; border-color: #d1fae5 !important; background: #fff;}}
 /* Menú principal (Streamlit 1.67: pestañas = [data-testid="stTab"] dentro de [role="tablist"]) */
-/* Menú: degradado propio (menta suave -> verde agua), distinto de la portada para que se note la separación */
+/* Menú: franja blanca con puntitos verdes, distinta de la portada para que se note la separación */
 [data-testid="stTabs"] {{position: relative; isolation: isolate;}}
 [data-testid="stTabs"] [role="tablist"] {{background: transparent; padding: 12px 0 12px; gap: 8px;
     border-bottom: none; margin-bottom: 0;}}
 [data-testid="stTabs"]::before {{content: ""; position: absolute; top: 0; height: 64px; left: 50%;
     width: 100vw; transform: translateX(-50%); z-index: -1; pointer-events: none;
-    background: linear-gradient(90deg, #ecfdf5 0%, #ccfbf1 55%, #a7f3d0 100%);
-    border-bottom: 1px solid #99f6e4; box-shadow: 0 4px 12px rgba(6,78,59,.08);}}
-[data-testid="stTab"] {{background: #ffffff; border: 1.5px solid #6ee7b7; border-radius: 10px; padding: 7px 14px;
+    background: radial-gradient(rgba(5,150,105,.16) 1.2px, transparent 1.3px) 0 0 / 18px 18px, #ffffff;
+    border-bottom: 1px solid #d1fae5; box-shadow: 0 6px 14px rgba(6,78,59,.07);}}
+[data-testid="stTabs"] [role="tablist"]::after {{display: none !important;}}  /* línea gris de Streamlit */
+[data-testid="stTab"] {{background: #ffffff; border: 1px solid #a7f3d0; border-radius: 10px; padding: 7px 14px;
     color: {AZUL_OSCURO}; font-weight: 600; outline: none !important; transition: all .15s;}}
 [data-testid="stTab"] p {{color: inherit !important; font-size: .95rem; font-weight: 600;}}
 [data-testid="stTab"]:hover {{background: {AZUL_SUAVE}; border-color: {AZUL};}}
 [data-testid="stTab"][aria-selected="true"] {{background: {AZUL}; color: #ffffff; border-color: {AZUL};
-    box-shadow: inset 0 -4px 0 {AMBAR};}}
+    box-shadow: 0 4px 10px rgba(5,150,105,.25);}}
 [data-testid="stTab"][aria-selected="true"] p, [data-testid="stTab"][aria-selected="true"]:hover p
     {{color: #ffffff !important;}}
 [data-testid="stTab"][aria-selected="true"]:hover {{background: {AZUL_OSCURO};}}
