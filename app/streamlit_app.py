@@ -148,7 +148,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .destacadas .op {{display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d1fae5;
                  border-radius: 12px; padding: 10px;}}
 /* Menú superior: sobre el mismo verde de la portada, botones sin fondo */
-.st-key-navbar {{position: relative; isolation: isolate; margin-top: -3rem; padding: 3.4rem 0 .8rem; flex-wrap: nowrap;}}
+.st-key-navbar {{position: relative; isolation: isolate; margin-top: -3rem; padding: 2.4rem 0 .7rem; flex-wrap: nowrap;}}
 .st-key-nav_menu {{flex-wrap: nowrap;}}
 .st-key-navbar button p {{white-space: nowrap;}}
 /* Ocultamos la barra de herramientas de Streamlit (Share, GitHub, ⋮): el menú de Rumbo queda arriba */
@@ -715,7 +715,7 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 # ============================================================
 st.markdown(f"<style>.st-key-nav_{ss['pagina']} button {{background: rgba(255,255,255,.18) !important;"
             f"box-shadow: inset 0 -3px 0 {AMBAR} !important;}}"
-            + (".st-key-nav_logo {visibility: hidden;} .st-key-navbar {padding-top: 2.6rem !important;"
+            + (".st-key-nav_logo {visibility: hidden;} .st-key-navbar {padding-top: 2.4rem !important;"
                "padding-bottom: 0 !important;}" if ss["pagina"] == "inicio" else "")
             + "</style>", unsafe_allow_html=True)
 with st.container(key="navbar", horizontal=True, vertical_alignment="center", gap="small"):
