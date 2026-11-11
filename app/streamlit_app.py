@@ -87,9 +87,10 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 
 /* Secciones */
 /* Cada sección empieza con una franja propia, bien separada de la anterior */
-.sec {{margin: 44px 0 22px; padding: 22px 0; scroll-margin-top: 90px; position: relative; background: #fffbeb;
-      box-shadow: 0 0 0 100vmax #fffbeb; clip-path: inset(0 -100vmax);
-      border-top: 3px solid {AMBAR}; border-bottom: 1px solid #fde68a; animation: aparecer .5s ease-out;}}
+.sec {{margin: 44px 0 22px; padding: 22px 0; scroll-margin-top: 90px; position: relative; isolation: isolate;
+      animation: aparecer .5s ease-out;}}
+.sec::before {{content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+              background: #fffbeb; border-top: 3px solid {AMBAR}; border-bottom: 1px solid #fde68a; z-index: -1;}}
 .sec .eyebrow {{color: #b45309; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
 .sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
