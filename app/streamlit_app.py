@@ -55,12 +55,17 @@ st.markdown(f"""
 .block-container {{padding-top: 0; max-width: 1280px;}}
 .stApp {{overflow-x: hidden;}}
 header[data-testid="stHeader"] {{background: transparent;}}
+[data-testid="stDecoration"] {{display: none;}}
+[data-testid="stAppViewContainer"] > .main, [data-testid="stMain"] {{padding-top: 0 !important;}}
+[data-testid="stMainBlockContainer"], .block-container {{padding-top: 0 !important;}}
+header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[data-testid="stHeader"] span
+  {{color: #ffffff !important;}}
 
 /* Portada */
 /* La portada ocupa todo el ancho de la página, de borde a borde y desde arriba */
 .hero {{background: radial-gradient(circle at 85% 20%, rgba(56,189,248,.45), transparent 45%),
         linear-gradient(125deg, {AZUL_OSCURO} 0%, {AZUL} 70%); color: #fff;
-        margin: 0 calc(50% - 50vw) 18px; padding: 64px 0 34px; animation: aparecer .6s ease-out;}}
+        margin: -4rem calc(50% - 50vw) 18px; padding: 6.5rem 0 34px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
