@@ -4,8 +4,8 @@
 y Convencional), redactadas por la founder. Se responden con una escala de 1 (no me interesa) a 5
 (me interesa mucho).
 
-Para responder, se presentan en 6 partes de 6 preguntas; cada parte tiene una pregunta de cada
-tipo, así ningún bloque revela qué se está midiendo y el cansancio se reparte por igual.
+Se presentan en 6 partes, una por tipo de interés, con nombres amigables (Construir y explorar,
+Investigar y descubrir, Crear e imaginar, Ayudar y conectar, Liderar y emprender, Organizar y planificar).
 """
 from ai.areas import AREAS
 
@@ -62,17 +62,15 @@ AFIRMACIONES = {
 }
 
 ORDEN = ["R", "I", "A", "S", "E", "C"]
-# Nombres de cada parte: acompañan el avance del estudiante (cada parte mezcla los 6 tipos de interés)
-NOMBRES_PARTE = ["Empecemos", "Descubre lo que te gusta", "Sigue explorando", "¡Ya vas a la mitad!",
-                 "Casi terminas", "Último paso"]
-ICONOS_PARTE = ["🚀", "🔍", "🧭", "⭐", "💪", "🏁"]
 
-# 6 partes: la parte k tiene la pregunta k de cada dimensión
-SECCIONES_TEST = [
-    (NOMBRES_PARTE[k], ICONOS_PARTE[k],
-     [(d, AFIRMACIONES[d][k], "") for d in ORDEN])
-    for k in range(6)
-]
+# 6 partes, una por dimensión, en el orden del instrumento original (preguntas 1-6, 7-12, ..., 31-36)
+NOMBRES_PARTE = {"R": "Construir y explorar", "I": "Investigar y descubrir", "A": "Crear e imaginar",
+                 "S": "Ayudar y conectar", "E": "Liderar y emprender", "C": "Organizar y planificar"}
+ICONOS_PARTE = {"R": "🛠️", "I": "🔬", "A": "🎨", "S": "🤝", "E": "🚀", "C": "📋"}  # respaldo en texto
+ICONOS_3D_PARTE = {"R": "parte_construir", "I": "parte_investigar", "A": "parte_crear",
+                   "S": "parte_ayudar", "E": "parte_liderar", "C": "parte_organizar"}  # app/iconos/*.png
+SECCIONES_TEST = [(NOMBRES_PARTE[d], ICONOS_PARTE[d], [(d, texto, "") for texto in AFIRMACIONES[d]]) for d in ORDEN]
+ICONOS_3D = [ICONOS_3D_PARTE[d] for d in ORDEN]
 
 # Lista plana de preguntas en el orden en que se muestran (6 por parte)
 PREGUNTAS = [(dim, texto) for _, _, items in SECCIONES_TEST for dim, texto, _ in items]
@@ -83,13 +81,9 @@ OPCIONES = {1: "1 · No me interesa", 2: "2 · Me interesa poco", 3: "3 · Me in
             4: "4 · Me interesa bastante", 5: "5 · Me interesa mucho"}
 ESCALA_MAX = max(OPCIONES)
 
-# Respuestas de ejemplo para la demo: estudiante con perfil Social-Investigativo (orden R, I, A, S, E, C)
-EJEMPLO = [2, 5, 2, 5, 2, 3,
-           1, 4, 2, 5, 3, 3,
-           2, 5, 1, 4, 2, 4,
-           1, 4, 2, 5, 2, 3,
-           2, 4, 1, 5, 3, 3,
-           1, 5, 2, 4, 2, 4]
+# Respuestas de ejemplo para la demo: estudiante con perfil Social-Investigativo (6 por dimensión, orden R I A S E C)
+EJEMPLO = ([2, 1, 2, 2, 1, 2] + [5, 4, 5, 5, 4, 5] + [2, 2, 1, 2, 1, 2] +
+           [5, 5, 4, 5, 5, 4] + [2, 3, 2, 2, 3, 2] + [3, 3, 4, 3, 3, 4])
 
 
 def puntajes(respuestas: list[int]) -> dict[str, float]:

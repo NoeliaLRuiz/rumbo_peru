@@ -26,7 +26,7 @@ from ai.orientador import _nivel as nivel_de  # noqa: E402
 from ai.orientador import recomendar  # noqa: E402
 from ai.perfil_egreso import perfil_egreso  # noqa: E402
 from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, INSTRUCCIONES, OPCIONES, POR_SECCION,  # noqa: E402
-                                PREGUNTAS,
+                                ICONOS_3D, PREGUNTAS,
                                 SECCIONES_TEST,
                                 codigo_holland, puntajes, ranking_areas)
 
@@ -77,7 +77,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 /* Verde esmeralda con textura de puntos (evoca un mapa) */
 .hero {{background: radial-gradient(rgba(255,255,255,.13) 1.2px, transparent 1.3px) 0 0 / 18px 18px,
         linear-gradient(90deg, #064e3b 0%, #059669 100%); color: #fff;
-        margin: -1rem calc(50% - 50vw) 0; padding: 1.2rem 0 34px; animation: aparecer .6s ease-out;}}
+        margin: -1rem calc(50% - 50vw) 0; padding: 0 0 30px; animation: aparecer .6s ease-out;}}
 .hero .dentro {{max-width: 1280px; margin: 0 auto; padding: 0 3rem;}}
 .hero .top {{display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;}}
 .hero .marca {{display: flex; align-items: center; gap: 14px;}}
@@ -117,7 +117,11 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
                 padding: 3px 14px; border-radius: 6px 6px 0 0;}}
 .sec-card .cuerpo {{background: #f1f5f9; border-radius: 0 12px 12px 12px; padding: 14px; color: {AZUL};
                    font-weight: 700; min-height: 92px;}}
-.sec-card .ico {{display: block; font-size: 1.5rem; margin-bottom: 4px;}}
+.sec-card .ico {{display: block; margin-bottom: 6px;}}
+.sec-card .ico img {{width: 44px; height: 44px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));}}
+.secs.pasos .sec-card .ico img {{width: 30px; height: 30px;}}
+.pregunta-sec {{display: flex; align-items: center; gap: 10px;}}
+.ico-parte img {{width: 46px; height: 46px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));}}
 .sec-card.activa .etq {{background: {AZUL};}} .sec-card.activa .cuerpo {{background: {AZUL_SUAVE};
                        border: 2px solid {AZUL};}}
 .sec-card.hecha .etq {{background: {AMBAR}; color: {AMBAR_OSCURO};}}
@@ -276,6 +280,7 @@ def _icono_3d(nombre: str) -> str:
     return f'<img src="data:image/png;base64,{base64.b64encode(datos).decode()}" alt="">'
 
 
+ICONOS_PARTES = [_icono_3d(n) for n in ICONOS_3D]  # una por parte del test
 ICONOS_TIPS = {"reloj": _icono_3d("reloj"), "sinceridad": _icono_3d("sinceridad"),
                "privacidad": _icono_3d("privacidad"), "ubicacion": _icono_3d("escuela")}
 COLORES_TIPS = ["#fef3c7", "#ffedd5", "#d1fae5", "#ccfbf1"]  # fondo pastel de cada círculo
@@ -710,7 +715,8 @@ def comparador(prog_inicial: str, region_inicial: str, k: str):
 # ============================================================
 st.markdown(f"<style>.st-key-nav_{ss['pagina']} button {{background: rgba(255,255,255,.18) !important;"
             f"box-shadow: inset 0 -3px 0 {AMBAR} !important;}}"
-            + (".st-key-nav_logo {visibility: hidden;}" if ss["pagina"] == "inicio" else "")
+            + (".st-key-nav_logo {visibility: hidden;} .st-key-navbar {padding-top: 2.6rem !important;"
+               "padding-bottom: 0 !important;}" if ss["pagina"] == "inicio" else "")
             + "</style>", unsafe_allow_html=True)
 with st.container(key="navbar", horizontal=True, vertical_alignment="center", gap="small"):
     st.button("Rumbo", key="nav_logo", on_click=ir_pagina, args=("inicio",), type="tertiary",
@@ -778,8 +784,8 @@ if ss["pagina"] == "test":
                 f"<b>{len(SECCIONES_TEST)} secciones</b>:</p>"
                 '<div class="secs">' + "".join(
                     f'<div class="sec-card"><div class="etq">Sección {n}</div>'
-                    f'<div class="cuerpo"><span class="ico">{ico}</span>{titulo}</div></div>'
-                    for n, (titulo, ico, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>",
+                    f'<div class="cuerpo"><span class="ico">{ICONOS_PARTES[n - 1]}</span>{titulo}</div></div>'
+                    for n, (titulo, _, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>",
                 unsafe_allow_html=True)
             with st.container(border=True, key="card_inicio"):
                 c1, c2 = st.columns([1, 2])
@@ -797,10 +803,10 @@ if ss["pagina"] == "test":
         st.markdown('<div class="banda">Test de intereses vocacionales</div>', unsafe_allow_html=True)
         st.markdown('<div class="secs pasos">' + "".join(
             f'<div class="sec-card {"activa" if n == paso else "hecha" if n < paso else ""}">'
-            f'<div class="etq">Sección {n}</div><div class="cuerpo"><span class="ico">{ico}</span>{t}</div></div>'
-            for n, (t, ico, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>", unsafe_allow_html=True)
+            f'<div class="etq">Sección {n}</div><div class="cuerpo"><span class="ico">{ICONOS_PARTES[n - 1]}</span>{t}</div></div>'
+            for n, (t, _, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>", unsafe_allow_html=True)
         st.progress(paso / N_PASOS, text=f"Sección {paso} de {N_PASOS}")
-        st.markdown(f"<div class='pregunta-sec'>{ico_sec} {titulo_sec}</div>"
+        st.markdown(f"<div class='pregunta-sec'><span class='ico-parte'>{ICONOS_PARTES[paso - 1]}</span>{titulo_sec}</div>"
                     f"<div class='nota'>{INSTRUCCIONES} No hay respuestas buenas ni malas.</div>",
                     unsafe_allow_html=True)
         indices = list(range((paso - 1) * POR_SECCION, paso * POR_SECCION))
@@ -1168,7 +1174,7 @@ if ss["pagina"] == "colegios":
     seccion(4, "Sobre el test", "Cómo se construyeron las preguntas", "sobre_test")
     st.markdown("- Se basa en el **modelo RIASEC de John Holland**: seis tipos de interés (Realista, Investigador, "
                 "Artístico, Social, Emprendedor y Convencional). Son **36 preguntas (6 por tipo)** que se responden con "
-                "una escala de 1 (no me interesa) a 5 (me interesa mucho), en 6 partes con una pregunta de cada tipo.\n"
+                "una escala de 1 (no me interesa) a 5 (me interesa mucho), en 6 partes, una por tipo de interés.\n"
                 "- Las preguntas fueron **elaboradas por la founder** a partir del modelo RIASEC: cada una describe "
                 "una actividad de un solo tipo de interés, y se responde según el interés, no según la habilidad.\n"
                 "- **Es una herramienta de orientación, no un diagnóstico.** Conviene conversar el resultado con "
