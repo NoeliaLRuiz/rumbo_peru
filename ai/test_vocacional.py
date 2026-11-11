@@ -1,11 +1,14 @@
 """Test de intereses basado en el modelo RIASEC de John Holland.
 
+24 preguntas en 4 secciones temáticas (actividades, lugares de trabajo, temas y otras actividades).
+Cada sección tiene 6 preguntas, una por tipo de interés, así el puntaje queda balanceado.
+
 Las preguntas son de redacción propia. Siguen el formato de los marcadores RIASEC de dominio público
 (AFPD; Armstrong y otros, 2008), validados en español por Cupani y otros (2019):
-  - una sola actividad concreta por pregunta (sin "o" que mezcle actividades distintas),
+  - una sola actividad, lugar o tema concreto por pregunta,
   - cada pregunta mide un solo tipo de interés,
-  - actividades posibles en la costa, la sierra y la selva (sin suponer computadora ni redes sociales),
-  - 4 preguntas por tipo y respuesta de agrado de 1 (no me gusta) a 4 (me encanta).
+  - posibles en la costa, la sierra y la selva (sin suponer computadora ni redes sociales),
+  - respuesta de agrado de 1 (no me gusta) a 4 (me encanta).
 No son una traducción del instrumento AFPD: para medir con un test validado, usar sus ítems en español.
 """
 from ai.areas import AREAS
@@ -19,37 +22,54 @@ DIMENSIONES = {
     "C": ("Convencional", "Te gusta el orden, los datos, los números y seguir procesos claros."),
 }
 
-PREGUNTAS = [
-    ("R", "Reparar cosas que se malogran en casa"),
-    ("R", "Trabajar en el campo con plantas o animales"),
-    ("R", "Construir algo con tus manos, como un mueble o una maqueta"),
-    ("R", "Usar herramientas o máquinas para hacer un trabajo"),
-    ("I", "Hacer experimentos para descubrir por qué pasa algo"),
-    ("I", "Resolver problemas difíciles de matemática"),
-    ("I", "Aprender cómo funciona el cuerpo humano"),
-    ("I", "Investigar un tema a fondo hasta entenderlo"),
-    ("A", "Dibujar o pintar"),
-    ("A", "Escribir cuentos, poemas o historias"),
-    ("A", "Presentarte en un escenario: actuar, bailar o tocar música"),
-    ("A", "Diseñar cómo se ve algo: un afiche, una prenda o un ambiente"),
-    ("S", "Explicarle un tema a un compañero que no lo entiende"),
-    ("S", "Cuidar a una persona enferma o mayor"),
-    ("S", "Participar en actividades para ayudar a tu comunidad"),
-    ("S", "Escuchar y aconsejar a alguien que tiene un problema"),
-    ("E", "Vender un producto o un servicio"),
-    ("E", "Convencer a un grupo de que apoye tu idea"),
-    ("E", "Dirigir un grupo como delegado o líder"),
-    ("E", "Iniciar tu propio negocio"),
-    ("C", "Llevar las cuentas del dinero de un negocio o de tu casa"),
-    ("C", "Llevar un registro ordenado de algo, como notas, ventas o inventario"),
-    ("C", "Revisar un trabajo con cuidado para encontrar errores"),
-    ("C", "Ordenar documentos para que todo esté en su lugar"),
+# (título de la sección, ícono, [(tipo, pregunta, ayuda para palabras poco conocidas)])
+SECCIONES_TEST = [
+    ("¿Te gustaría hacer estas actividades?", "🛠️", [
+        ("R", "Reparar cosas que se malogran en casa", ""),
+        ("I", "Hacer experimentos para descubrir por qué pasa algo", ""),
+        ("A", "Dibujar o pintar", ""),
+        ("S", "Explicarle un tema a un compañero que no lo entiende", ""),
+        ("E", "Vender un producto o un servicio", ""),
+        ("C", "Llevar las cuentas del dinero de un negocio o de tu casa", ""),
+    ]),
+    ("¿Te gustaría trabajar en estos lugares?", "🏢", [
+        ("R", "Un taller de mecánica o de carpintería", "Lugar donde se reparan o fabrican objetos, vehículos o muebles."),
+        ("I", "Un laboratorio de investigación", "Lugar donde se hacen pruebas y análisis para descubrir cosas nuevas."),
+        ("A", "Un estudio de diseño o de grabación", "Lugar donde se crean afiches, videos, música o diseños."),
+        ("S", "Un centro de salud o una escuela", ""),
+        ("E", "Tu propia empresa", "Un negocio que tú diriges y en el que tomas las decisiones."),
+        ("C", "Una oficina de contabilidad o un banco", "Lugares donde se registra y controla el dinero."),
+    ]),
+    ("¿Te gustaría aprender sobre estos temas?", "📚", [
+        ("R", "Cómo funcionan los motores y las máquinas", ""),
+        ("I", "Cómo funciona el cuerpo humano", ""),
+        ("A", "El arte, la música o el teatro", ""),
+        ("S", "Cómo aprenden y se sienten las personas", "Es lo que estudian la psicología y la educación."),
+        ("E", "Cómo crear y hacer crecer un negocio", ""),
+        ("C", "Cómo organizar información de forma ordenada", "Por ejemplo, archivos, registros o bases de datos."),
+    ]),
+    ("¿Te gustaría hacer estas otras actividades?", "✨", [
+        ("R", "Trabajar en el campo con plantas o animales", ""),
+        ("I", "Resolver problemas difíciles de matemática", ""),
+        ("A", "Presentarte en un escenario: actuar, bailar o tocar música", ""),
+        ("S", "Cuidar a una persona enferma o mayor", ""),
+        ("E", "Dirigir un grupo como delegado o líder", ""),
+        ("C", "Revisar un trabajo con cuidado para encontrar errores", ""),
+    ]),
 ]
+
+# Lista plana de preguntas en orden: sección 1, sección 2, ... (6 por sección)
+PREGUNTAS = [(dim, texto) for _, _, items in SECCIONES_TEST for dim, texto, _ in items]
+AYUDAS = [ayuda for _, _, items in SECCIONES_TEST for _, _, ayuda in items]
+POR_SECCION = 6
 
 OPCIONES = {1: "No me gusta", 2: "Me da igual", 3: "Me gusta", 4: "Me encanta"}
 
-# Respuestas de ejemplo para la demo (estudiante con perfil Social-Investigador)
-EJEMPLO = [2, 1, 2, 1, 4, 3, 4, 3, 2, 2, 1, 2, 4, 4, 3, 4, 2, 2, 3, 1, 2, 3, 3, 2]
+# Respuestas de ejemplo para la demo: estudiante con perfil Social-Investigador (orden R, I, A, S, E, C)
+EJEMPLO = [2, 4, 2, 4, 2, 3,
+           1, 4, 2, 4, 2, 3,
+           2, 4, 1, 4, 2, 3,
+           1, 3, 1, 4, 3, 2]
 
 
 def puntajes(respuestas: list[int]) -> dict[str, float]:

@@ -21,7 +21,8 @@ from ai.areas import AREAS, icono_area, nombre_area, normalizar  # noqa: E402
 from ai.orientador import _nivel as nivel_de  # noqa: E402
 from ai.orientador import recomendar  # noqa: E402
 from ai.perfil_egreso import perfil_egreso  # noqa: E402
-from ai.test_vocacional import (DIMENSIONES, EJEMPLO, OPCIONES, PREGUNTAS,  # noqa: E402
+from ai.test_vocacional import (AYUDAS, DIMENSIONES, EJEMPLO, OPCIONES, POR_SECCION, PREGUNTAS,  # noqa: E402
+                                SECCIONES_TEST,
                                 codigo_holland, puntajes, ranking_areas)
 
 st.set_page_config(page_title="Rumbo · Orientación vocacional", page_icon="🧭", layout="wide")
@@ -76,6 +77,26 @@ st.markdown(f"""
 .sec .eyebrow {{color: {AZUL}; font-weight: 700; letter-spacing: .14em; font-size: .72rem; text-transform: uppercase;}}
 .sec h2 {{color: #0f172a; font-weight: 800; font-size: 1.7rem; margin: 2px 0 2px; padding: 0;}}
 .sec p {{color: {GRIS}; margin: 0; font-size: .98rem;}}
+/* Portada del test: franja de título, consejos y tarjetas de secciones */
+.banda {{background: linear-gradient(90deg, {AZUL_OSCURO}, {AZUL}); color: #fff; text-align: center;
+        font-weight: 800; font-size: 1.9rem; padding: 14px 18px; border-radius: 14px; margin: 8px 0 22px;}}
+.tips {{background: #f1f5f9; border-radius: 16px; padding: 18px 16px; display: flex; flex-direction: column; gap: 22px;}}
+.tip {{text-align: center; color: #334155; font-size: .97rem;}}
+.tip .ico {{font-size: 2.6rem; line-height: 1.1; margin-bottom: 4px;}}
+.intro {{font-size: 1.05rem; color: #1f2937; margin: 0 0 10px; text-align: justify;}}
+.secs {{display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 10px 0 16px;}}
+.sec-card .etq {{display: inline-block; background: #94a3b8; color: #fff; font-weight: 700; font-size: .85rem;
+                padding: 3px 14px; border-radius: 6px 6px 0 0;}}
+.sec-card .cuerpo {{background: #f1f5f9; border-radius: 0 12px 12px 12px; padding: 14px; color: {AZUL};
+                   font-weight: 700; min-height: 92px;}}
+.sec-card .ico {{display: block; font-size: 1.5rem; margin-bottom: 4px;}}
+.sec-card.activa .etq {{background: {AZUL};}} .sec-card.activa .cuerpo {{background: {AZUL_SUAVE};
+                       border: 2px solid {AZUL};}}
+.sec-card.hecha .etq {{background: {AMBAR}; color: {AMBAR_OSCURO};}}
+.secs.pasos .cuerpo {{min-height: 70px; font-size: .9rem;}}
+.callout {{background: {AZUL}; color: #fff; border-radius: 14px; padding: 12px 16px; font-size: .95rem; margin-bottom: 14px;}}
+.pregunta-sec {{font-size: 1.45rem; font-weight: 800; color: {AZUL_OSCURO}; margin: 8px 0 2px;}}
+.nota {{color: {GRIS}; margin-bottom: 10px;}}
 .inst-nombre {{font-weight: 800; font-size: 1.28rem; color: {AZUL_OSCURO}; line-height: 1.25;}}
 
 /* Navegación de resultados */
@@ -526,52 +547,73 @@ tab_test, tab_panorama, tab_explorar, tab_comparar, tab_colegios = st.tabs(
 with tab_test:
     paso = ss["paso"]
 
-    # ---- Paso 0: bienvenida + panorama nacional ----
+    # ---- Paso 0: portada del test ----
     if paso == 0:
-        seccion("Comienza aquí", "Empieza tu test vocacional", "24 actividades en 4 pasos cortos · unos 3 minutos", "inicio")
-        izq, der = st.columns([3, 2], gap="large")
-        with izq, st.container(border=True, key="card_inicio"):
-            ss["depto"] = st.selectbox("¿En qué región vives?", departamentos,
-                                       index=departamentos.index(ss["depto"]), format_func=str.title)
-            ss["sobre_mi"] = st.text_area("Cuéntanos con tus palabras qué te gusta o qué te imaginas haciendo "
-                                          "(opcional)", value=ss["sobre_mi"], max_chars=600, height=110)
-            b1, b2 = st.columns(2)
-            b1.button("Empezar el test →", type="primary", on_click=ir_a, args=(1,), width="stretch")
-            b2.button("Ver un ejemplo (demo)", on_click=usar_demo, width="stretch")
-        with der, st.container(border=True, key="card_beneficios"):
-            st.markdown("**Lo que vas a obtener**")
-            st.markdown("1. Tu **perfil de intereses** (modelo RIASEC)\n"
-                        "2. **Carreras sugeridas**, universitarias y técnicas\n"
-                        "3. **Mapa** de dónde estudiarlas en tu región\n"
-                        "4. **Comparación** de instituciones públicas y privadas\n"
-                        "5. Un **reporte** para tu tutor o tu familia")
+        st.markdown('<div class="banda">Test de intereses vocacionales</div>', unsafe_allow_html=True)
+        izq, der = st.columns([1, 2.2], gap="large")
+        with izq:
+            consejos = [("⏱️", "Dura unos <b>5 minutos</b>."),
+                        ("👍", "Responde con sinceridad. Así tus resultados serán confiables."),
+                        ("🔒", "No guardamos tus respuestas ni tus datos personales."),
+                        ("📍", "Al final verás <b>dónde estudiar</b> cerca de casa, en instituciones públicas y privadas.")]
+            st.markdown('<div class="tips">' + "".join(
+                f'<div class="tip"><div class="ico">{i}</div><div>{t}</div></div>' for i, t in consejos)
+                + "</div>", unsafe_allow_html=True)
+        with der:
+            st.markdown(
+                "<p class='intro'>Rumbo te ayuda a descubrir qué <b>carreras técnicas o universitarias</b> van con tus "
+                "intereses y <b>dónde estudiarlas</b> en tu región: universidades, institutos, escuelas superiores "
+                "y CETPRO, públicos y privados.</p>"
+                f"<p class='intro'>El test tiene <b>{len(PREGUNTAS)} preguntas</b> divididas en "
+                f"<b>{len(SECCIONES_TEST)} secciones</b>:</p>"
+                '<div class="secs">' + "".join(
+                    f'<div class="sec-card"><div class="etq">Sección {n}</div>'
+                    f'<div class="cuerpo"><span class="ico">{ico}</span>{titulo}</div></div>'
+                    for n, (titulo, ico, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>"
+                '<div class="callout">¿No conoces una palabra? Pasa el mouse sobre el ícono <b>ⓘ</b> junto a la '
+                "pregunta y verás una explicación.</div>", unsafe_allow_html=True)
+            with st.container(border=True, key="card_inicio"):
+                c1, c2 = st.columns([1, 2])
+                ss["depto"] = c1.selectbox("¿En qué región vives?", departamentos,
+                                           index=departamentos.index(ss["depto"]), format_func=str.title)
+                ss["sobre_mi"] = c2.text_input("Cuéntanos qué te gusta hacer (opcional)", value=ss["sobre_mi"],
+                                               max_chars=600, placeholder="Ej.: me gusta ayudar a mis compañeros…")
+                b1, b2 = st.columns(2)
+                b1.button("Iniciar el test →", type="primary", on_click=ir_a, args=(1,), width="stretch")
+                b2.button("Ver un ejemplo (demo)", on_click=usar_demo, width="stretch")
 
-
-    # ---- Pasos 1-4: preguntas ----
+    # ---- Secciones 1-4: preguntas ----
     elif 1 <= paso <= N_PASOS:
-        seccion(f"Paso {paso} de {N_PASOS}", "¿Cuánto te gustaría hacer cada actividad?",
-                "No hay respuestas buenas ni malas: responde lo que sientes", "preguntas")
-        st.progress(paso / N_PASOS)
-        st.caption("Piensa en cuánto te gustaría hacer cada actividad, aunque nunca la hayas hecho.")
-        indices = [paso - 1 + N_PASOS * d for d in range(len(DIMENSIONES))]  # una pregunta de cada tipo
+        titulo_sec, ico_sec, _ = SECCIONES_TEST[paso - 1]
+        st.markdown('<div class="banda">Test de intereses vocacionales</div>', unsafe_allow_html=True)
+        st.markdown('<div class="secs pasos">' + "".join(
+            f'<div class="sec-card {"activa" if n == paso else "hecha" if n < paso else ""}">'
+            f'<div class="etq">Sección {n}</div><div class="cuerpo"><span class="ico">{ico}</span>{t}</div></div>'
+            for n, (t, ico, _) in enumerate(SECCIONES_TEST, start=1)) + "</div>", unsafe_allow_html=True)
+        st.progress(paso / N_PASOS, text=f"Sección {paso} de {N_PASOS}")
+        st.markdown(f"<div class='pregunta-sec'>{ico_sec} {titulo_sec}</div>"
+                    "<div class='nota'>Marca cuánto te gustaría, aunque nunca lo hayas hecho. "
+                    "No hay respuestas buenas ni malas.</div>", unsafe_allow_html=True)
+        indices = list(range((paso - 1) * POR_SECCION, paso * POR_SECCION))
         cols = st.columns(2)
         for n, i in enumerate(indices):
             with cols[n % 2], st.container(border=True, key=f"card_q{i}"):
                 actual = ss["resp"][i]
                 valor = st.radio(f"**{PREGUNTAS[i][1]}**", list(OPCIONES), format_func=OPCIONES.get,
-                                 horizontal=True, index=list(OPCIONES).index(actual) if actual else None, key=f"w{i}")
+                                 horizontal=True, index=list(OPCIONES).index(actual) if actual else None,
+                                 key=f"w{i}", help=AYUDAS[i] or None)
                 ss["resp"][i] = valor
         faltan = sum(ss["resp"][i] is None for i in indices)
         b1, _, b2 = st.columns([1, 2, 1])
         b1.button("← Atrás", on_click=ir_a, args=(paso - 1,), width="stretch")
         if paso < N_PASOS:
-            b2.button("Siguiente →", type="primary", disabled=faltan > 0, on_click=ir_a, args=(paso + 1,),
+            b2.button("Siguiente sección →", type="primary", disabled=faltan > 0, on_click=ir_a, args=(paso + 1,),
                       width="stretch")
         else:
             b2.button("Ver mis resultados →", type="primary", disabled=faltan > 0, on_click=calcular_resultado,
                       width="stretch")
         if faltan:
-            st.caption(f"Responde las {faltan} actividades que faltan para continuar.")
+            st.caption(f"Responde las {faltan} preguntas que faltan para continuar.")
 
     # ---- Resultados: una sección a la vez, con Anterior / Siguiente ----
     elif ss.get("resultado"):
@@ -879,7 +921,7 @@ with tab_comparar:
 # ============================================================
 with tab_colegios:
     seccion(1, "Cómo funciona", "De la duda a un plan concreto en una clase de tutoría", "como")
-    pasos = [("🧭", "El estudiante hace el test", "24 actividades en 4 pasos, desde el celular o la sala de cómputo."),
+    pasos = [("🧭", "El estudiante hace el test", "24 preguntas en 4 secciones, desde el celular o la sala de cómputo."),
              ("🤖", "La IA interpreta su perfil", "Claude explica sus intereses y sugiere carreras reales del Perú."),
              ("🗺️", "Ve dónde estudiar", "Mapa con instituciones públicas y privadas de su región y su web."),
              ("📄", "El tutor recibe el reporte", "Para conversar con el estudiante y su familia.")]
@@ -912,7 +954,7 @@ with tab_colegios:
 
     seccion(4, "Sobre el test", "Cómo se construyeron las preguntas", "sobre_test")
     st.markdown("- Se basa en el **modelo RIASEC de John Holland**: seis tipos de interés (Realista, Investigador, "
-                "Artístico, Social, Emprendedor y Convencional), con **4 actividades por tipo**.\n"
+                "Artístico, Social, Emprendedor y Convencional). Son **24 preguntas en 4 secciones** (actividades, lugares de trabajo, temas y otras actividades), con una pregunta de cada tipo por sección.\n"
                 "- Las preguntas son de redacción propia y siguen el formato de los **marcadores RIASEC de dominio "
                 "público (AFPD)**, validados en español por Cupani y otros (2019): **una sola actividad por "
                 "pregunta**, cada una de un solo tipo y posible en la costa, la sierra o la selva.\n"
