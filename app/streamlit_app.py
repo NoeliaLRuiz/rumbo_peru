@@ -102,7 +102,7 @@ header[data-testid="stHeader"] button, header[data-testid="stHeader"] a, header[
 .tip .ico {{width: 74px; height: 74px; margin: 0 auto 8px; border-radius: 50%; background: #ffffff;
             border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 12px rgba(5,150,105,.12);}}
-.tip .ico svg {{width: 46px; height: 46px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.12));}}
+.tip .ico img {{width: 52px; height: 52px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.18));}}
 .intro {{font-size: 1.05rem; color: #1f2937; margin: 0 0 10px; text-align: justify;}}
 .secs {{display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 10px 0 16px;}}
 .sec-card .etq {{display: inline-block; background: #94a3b8; color: #fff; font-weight: 700; font-size: .85rem;
@@ -220,29 +220,14 @@ def orden_prestigio(df: pd.DataFrame) -> pd.DataFrame:
 
 SINEACE = "https://app.sineace.gob.pe/buscador/acreditacion.aspx"
 
-# Íconos a color para los consejos del test (paleta de la app: verde, ámbar y turquesa)
-ICONOS_TIPS = {
-    "reloj": '<svg viewBox="0 0 48 48"><rect x="19" y="3" width="10" height="5" rx="2" fill="#f59e0b"/>'
-             '<circle cx="24" cy="27" r="16" fill="#059669"/><circle cx="24" cy="27" r="12" fill="#ffffff"/>'
-             '<path d="M24 19v8l5.5 3.5" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>'
-             '<circle cx="24" cy="27" r="2" fill="#064e3b"/></svg>',
-    "sinceridad": '<svg viewBox="0 0 48 48"><rect x="6" y="21" width="9" height="20" rx="2" fill="#059669"/>'
-                  '<path d="M15 39c3 2 6 2.5 10 2.5h7c2 0 3.5-1.3 3.8-3.2l2.1-11c.4-2.2-1.3-4.3-3.6-4.3H28l1.5-7'
-                  'c.5-2.4-1.3-4.5-3.7-4.5L19 21h-4z" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" '
-                  'stroke-linejoin="round"/><path d="M38 9l3-3M42 15h3M35 5V2" stroke="#14b8a6" '
-                  'stroke-width="2.6" stroke-linecap="round"/></svg>',
-    "privacidad": '<svg viewBox="0 0 48 48"><path d="M24 4l16 6.5v11.5c0 10.5-7 18-16 22C15 40 8 32.5 8 22V10.5z" '
-                  'fill="#059669"/><path d="M24 8.5l12 4.9v8.6c0 8-5.2 13.8-12 17V8.5z" fill="#047857"/>'
-                  '<rect x="17" y="21" width="14" height="11" rx="2.5" fill="#fbbf24"/>'
-                  '<path d="M19.5 21v-3a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="#fbbf24" stroke-width="2.6"/>'
-                  '<circle cx="24" cy="26.5" r="1.8" fill="#78350f"/></svg>',
-    "ubicacion": '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="44" rx="9" ry="2.5" fill="#99f6e4"/>'
-                 '<path d="M24 43s14-12.5 14-23.5a14 14 0 0 0-28 0C10 30.5 24 43 24 43z" fill="#14b8a6"/>'
-                 '<circle cx="24" cy="19.5" r="9.5" fill="#ffffff"/><path d="M16.5 18l7.5-3.6 7.5 3.6-7.5 3.6z" '
-                 'fill="#064e3b"/><path d="M19.5 19.6v3c0 1.4 2 2.5 4.5 2.5s4.5-1.1 4.5-2.5v-3l-4.5 2.2z" '
-                 'fill="#064e3b"/><path d="M30.5 18.5v4.5" stroke="#f59e0b" stroke-width="1.8" '
-                 'stroke-linecap="round"/><circle cx="30.5" cy="23.8" r="1.4" fill="#f59e0b"/></svg>',
-}
+# Íconos 3D para los consejos del test: Fluent Emoji de Microsoft (licencia MIT), guardados en app/iconos/
+def _icono_3d(nombre: str) -> str:
+    datos = (Path(__file__).resolve().parent / "iconos" / f"{nombre}.png").read_bytes()
+    return f'<img src="data:image/png;base64,{base64.b64encode(datos).decode()}" alt="">'
+
+
+ICONOS_TIPS = {"reloj": _icono_3d("reloj"), "sinceridad": _icono_3d("sinceridad"),
+               "privacidad": _icono_3d("privacidad"), "ubicacion": _icono_3d("escuela")}
 COLORES_TIPS = ["#fef3c7", "#ffedd5", "#d1fae5", "#ccfbf1"]  # fondo pastel de cada círculo
 
 

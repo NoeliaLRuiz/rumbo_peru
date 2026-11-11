@@ -126,4 +126,6 @@ Construí Rumbo con **Claude Code** como co-founder técnico:
 - La clasificación por áreas es por palabras clave, por lo que hay casos dudosos.
 - Para regenerar la tabla: `python data/build_data.py`.
 
+**Íconos:** los íconos 3D de los consejos del test son [Fluent Emoji de Microsoft](https://github.com/microsoft/fluentui-emoji) (licencia MIT).
+
 **Licencia:** MIT
