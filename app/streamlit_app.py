@@ -1305,5 +1305,4 @@ if ss["pagina"] == "colegios":
                 "- **Es una herramienta de orientación, no un diagnóstico.** Conviene conversar el resultado con "
                 "un tutor o psicólogo.")
 
-st.markdown('<div class="pie">Rumbo · Orientación vocacional con datos abiertos del Perú · '
-            'Proyecto final Diplomatura Q-Lab PUCP 2026</div>', unsafe_allow_html=True)
+st.markdown('<div class="pie">Rumbo · Orientación vocacional con datos abiertos del Perú</div>', unsafe_allow_html=True)
